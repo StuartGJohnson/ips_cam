@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(usb_cam)
+project(ips_cam)
 
 # Default to C++17
 if(NOT CMAKE_CXX_STANDARD)
@@ -90,7 +90,7 @@ else()
 
   ## Use node to generate an executable
   rclcpp_components_register_node(${PROJECT_NAME}_node
-    PLUGIN "usb_cam::UsbCamNode"
+    PLUGIN "ips_cam::UsbCamNode"
     EXECUTABLE ${PROJECT_NAME}_node_exe
   )
   if(SANITIZE)
