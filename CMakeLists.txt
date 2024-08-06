@@ -90,7 +90,7 @@ else()
 
   ## Use node to generate an executable
   rclcpp_components_register_node(${PROJECT_NAME}_node
-    PLUGIN "ips_cam::UsbCamNode"
+	  PLUGIN "usb_cam::UsbCamNode"
     EXECUTABLE ${PROJECT_NAME}_node_exe
   )
   if(SANITIZE)
