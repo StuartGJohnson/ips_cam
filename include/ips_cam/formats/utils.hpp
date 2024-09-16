@@ -30,7 +30,7 @@
 #ifndef USB_CAM__FORMATS__UTILS_HPP_
 #define USB_CAM__FORMATS__UTILS_HPP_
 
-#include "usb_cam/utils.hpp"
+#include "ips_cam/utils.hpp"
 
 namespace usb_cam
 {

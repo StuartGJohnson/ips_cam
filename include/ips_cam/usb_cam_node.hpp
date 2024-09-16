@@ -38,11 +38,15 @@
 #include "camera_info_manager/camera_info_manager.hpp"
 #include "image_transport/image_transport.hpp"
 #include "rclcpp/rclcpp.hpp"
+#include "tf2/LinearMath/Quaternion.h"
+#include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
 #include "sensor_msgs/msg/image.hpp"
 #include "sensor_msgs/msg/compressed_image.hpp"
+#include "sensor_msgs/msg/illuminance.hpp"
+#include "geometry_msgs/msg/pose.hpp"
 #include "std_srvs/srv/set_bool.hpp"
-
-#include "usb_cam/usb_cam.hpp"
+#include "ips_cam/image_processor.hpp"
+#include "ips_cam/usb_cam.hpp"
 
 
 std::ostream & operator<<(std::ostream & ostr, const rclcpp::Time & tm)
@@ -81,10 +85,11 @@ public:
 
   sensor_msgs::msg::Image::UniquePtr m_image_msg;
   sensor_msgs::msg::CompressedImage::UniquePtr m_compressed_img_msg;
+  sensor_msgs::msg::Illuminance::UniquePtr m_illuminance_msg;
   std::shared_ptr<image_transport::CameraPublisher> m_image_publisher;
   rclcpp::Publisher<sensor_msgs::msg::CompressedImage>::SharedPtr m_compressed_image_publisher;
   rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr m_compressed_cam_info_publisher;
-
+  rclcpp::Publisher<sensor_msgs::msg::Illuminance>::SharedPtr m_illuminance_publisher;
   parameters_t m_parameters;
 
   sensor_msgs::msg::CameraInfo::SharedPtr m_camera_info_msg;

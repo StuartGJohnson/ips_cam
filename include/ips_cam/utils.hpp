@@ -49,7 +49,7 @@ extern "C" {
 
 #include "linux/videodev2.h"
 
-#include "usb_cam/constants.hpp"
+#include "ips_cam/constants.hpp"
 
 namespace fs = std::filesystem;
 

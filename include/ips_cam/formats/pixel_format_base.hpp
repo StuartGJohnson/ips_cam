@@ -34,8 +34,8 @@
 
 #include "linux/videodev2.h"
 
-#include "usb_cam/constants.hpp"
-#include "usb_cam/conversions.hpp"
+#include "ips_cam/constants.hpp"
+#include "ips_cam/conversions.hpp"
 
 namespace usb_cam
 {

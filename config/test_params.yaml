@@ -1,0 +1,5 @@
+/**:
+    ros__parameters:
+      param1: 10
+      param2: "Hello"
+      param3: true

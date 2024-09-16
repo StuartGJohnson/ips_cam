@@ -38,7 +38,7 @@ extern "C" {
 #include "libavutil/pixfmt.h"
 }
 
-#include "usb_cam/constants.hpp"
+#include "ips_cam/constants.hpp"
 
 #define stringify(name) #name
 

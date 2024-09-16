@@ -32,8 +32,8 @@
 
 #include "linux/videodev2.h"
 
-#include "usb_cam/formats/pixel_format_base.hpp"
-#include "usb_cam/formats/utils.hpp"
+#include "ips_cam/formats/pixel_format_base.hpp"
+#include "ips_cam/formats/utils.hpp"
 
 
 namespace usb_cam

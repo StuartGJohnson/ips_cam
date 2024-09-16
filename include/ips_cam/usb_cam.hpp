@@ -43,16 +43,16 @@ extern "C" {
 #include <string>
 #include <vector>
 
-#include "usb_cam/utils.hpp"
-#include "usb_cam/formats/pixel_format_base.hpp"
-#include "usb_cam/formats/av_pixel_format_helper.hpp"
+#include "ips_cam/utils.hpp"
+#include "ips_cam/formats/pixel_format_base.hpp"
+#include "ips_cam/formats/av_pixel_format_helper.hpp"
 
-#include "usb_cam/formats/mjpeg.hpp"
-#include "usb_cam/formats/mono.hpp"
-#include "usb_cam/formats/rgb.hpp"
-#include "usb_cam/formats/uyvy.hpp"
-#include "usb_cam/formats/yuyv.hpp"
-#include "usb_cam/formats/m420.hpp"
+#include "ips_cam/formats/mjpeg.hpp"
+#include "ips_cam/formats/mono.hpp"
+#include "ips_cam/formats/rgb.hpp"
+#include "ips_cam/formats/uyvy.hpp"
+#include "ips_cam/formats/yuyv.hpp"
+#include "ips_cam/formats/m420.hpp"
 
 
 namespace usb_cam
@@ -167,6 +167,19 @@ typedef struct
   }
 } image_t;
 
+// this is an image, but it is in a buffer managed by usb_cam/v4l2, and
+// must be returned so that streaming into this buffer entry may continue.
+// note the streamlining vs image_t, and the addition of the v4l2 buffer.
+typedef struct 
+{
+    bool valid;
+    char * data;
+    size_t width;
+    size_t height;
+    struct timespec stamp;
+    struct v4l2_buffer buf;
+} buffered_image;
+
 class UsbCam
 {
 public:
@@ -182,6 +195,12 @@ public:
   /// @brief shutdown camera
   void shutdown(void);
 
+  /// @brief Take and return a buffered image. To (must) be released by the method below.
+  /// @return 
+  buffered_image get_buffered_image();
+
+  void release_buffered_image(buffered_image buffImage);
+
   /// @brief Take a new image with device and return it
   ///   To copy the returned image to another format:
   ///   sensor_msgs::msg::Image image_msg;
@@ -193,6 +212,8 @@ public:
   /// @brief Overload of get_image to allow users to pass
   /// in an image pointer to fill in
   void get_image(char * destination);
+
+  void get_image(char * destination, double& illuminance);
 
   std::vector<capture_format_t> get_supported_formats();
 
@@ -385,10 +406,14 @@ private:
   void init_userp();
   void init_device();
 
+  // prepares for read. recovered from poorly named grab_image();
+  bool manage_fd();
+
   void open_device();
   void grab_image();
   void read_frame();
   void process_image(const char * src, char * & dest, const int & bytes_used);
+  void reduce_image(const char * src);
 
   void uninit_device();
   void close_device();
@@ -399,6 +424,8 @@ private:
   unsigned int m_number_of_buffers;
   std::shared_ptr<usb_cam::utils::buffer[]> m_buffers;
   image_t m_image;
+  double m_illuminance;
+  cv::Mat detection_image;
 
   AVFrame * m_avframe;
   int m_avframe_size;

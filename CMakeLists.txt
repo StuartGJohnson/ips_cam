@@ -18,12 +18,17 @@ if($ENV{ROS_VERSION} EQUAL 1)
     cv_bridge
     roscpp
     std_msgs
+    geometry_msgs
     std_srvs
     sensor_msgs
     camera_info_manager
     image_transport)
 else()
   find_package(ament_cmake_auto REQUIRED)
+  find_package(Bullet REQUIRED)
+  find_package(tf2 REQUIRED)
+  find_package(tf2_geometry_msgs REQUIRED)
+  find_package(yaml-cpp REQUIRED)
   ament_auto_find_build_dependencies()
 endif()
 
@@ -50,6 +55,7 @@ endif()
 ## Do not use ament_auto here so as to not link to rclcpp
 add_library(${PROJECT_NAME} SHARED
   src/usb_cam.cpp
+  src/image_processor.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC
@@ -82,15 +88,20 @@ else()
 
   ## Declare a ROS 2 composible node as a library
   ament_auto_add_library(${PROJECT_NAME}_node SHARED
-    src/ros2/usb_cam_node.cpp
+    #src/ros2/usb_cam_node.cpp
+    src/ros2/ips_cam_node.cpp
   )
 
   target_link_libraries(${PROJECT_NAME}_node
     ${PROJECT_NAME})
 
   ## Use node to generate an executable
+  # rclcpp_components_register_node(${PROJECT_NAME}_node
+	#   PLUGIN "usb_cam::UsbCamNode"
+  #   EXECUTABLE ${PROJECT_NAME}_dep_node_exe
+  # )
   rclcpp_components_register_node(${PROJECT_NAME}_node
-	  PLUGIN "usb_cam::UsbCamNode"
+	  PLUGIN "ips_cam::IpsCamNode"
     EXECUTABLE ${PROJECT_NAME}_node_exe
   )
   if(SANITIZE)
@@ -120,10 +131,16 @@ if(BUILD_TESTING)
       ${PROJECT_NAME})
     # TODO(flynneva): rewrite this test in another PR
     # Integration tests
-    # ament_add_gtest(test_usb_cam_lib
+    #ament_add_gtest(test_usb_cam_lib
     #  test/test_usb_cam_lib.cpp)
-    # target_link_libraries(test_usb_cam_lib
+    #target_link_libraries(test_usb_cam_lib
     #   ${PROJECT_NAME})
+
+    ament_add_gtest(test_image_processing test/test_image_processing.cpp)
+    target_link_libraries(test_image_processing ${PROJECT_NAME} ${OpenCV_LIBRARIES})
+    ament_add_gtest(test_node test/test_node.cpp)
+    target_link_libraries(test_node ${PROJECT_NAME} ${PROJECT_NAME}_node yaml-cpp)
+
   endif()
 endif()
 

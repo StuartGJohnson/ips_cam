@@ -46,9 +46,9 @@ extern "C" {
 
 #include "opencv2/imgproc.hpp"
 
-#include "usb_cam/usb_cam.hpp"
-#include "usb_cam/conversions.hpp"
-#include "usb_cam/utils.hpp"
+#include "ips_cam/usb_cam.hpp"
+#include "ips_cam/conversions.hpp"
+#include "ips_cam/utils.hpp"
 
 
 namespace usb_cam
@@ -60,7 +60,7 @@ using utils::io_method_t;
 UsbCam::UsbCam()
 : m_device_name(), m_io(io_method_t::IO_METHOD_MMAP), m_fd(-1),
   m_number_of_buffers(4), m_buffers(new usb_cam::utils::buffer[m_number_of_buffers]), m_image(),
-  m_avframe(NULL), m_avcodec(NULL), m_avoptions(NULL),
+  m_illuminance(std::nan("")), m_avframe(NULL), m_avcodec(NULL), m_avoptions(NULL),
   m_avcodec_context(NULL), m_is_capturing(false), m_framerate(0),
   m_epoch_time_shift_us(usb_cam::utils::get_epoch_time_shift_us()), m_supported_formats()
 {}
@@ -86,6 +86,161 @@ void UsbCam::process_image(const char * src, char * & dest, const int & bytes_us
   } else {
     m_image.pixel_format->convert(src, dest, bytes_used);
   }
+}
+
+/// @brief perform reduction ops on image. Look up possible V4L2 pixel formats in the
+/// `linux/videodev2.h` header file. Not this function does not copy the image.
+/// @param src a pointer to a V4L2 source image
+void UsbCam::reduce_image(const char * src)
+{
+  // form an image suitable for opencv reduction computations.
+  cv::Mat src_image(m_image.height, m_image.width, CV_8UC2, (char *) src);
+
+  cv::cvtColor(src_image, detection_image, cv::COLOR_YUV2GRAY_YUYV);
+
+  // compute mean image level of monochrome image
+  m_illuminance = cv::mean(detection_image)[0];
+
+  // if (m_image.pixel_format->requires_conversion() == false) {
+  //   memcpy(dest, src, m_image.size_in_bytes);
+  // } else {
+  //   m_image.pixel_format->convert(src, dest, bytes_used);
+  // }
+}
+
+buffered_image UsbCam::get_buffered_image()
+{
+
+  buffered_image buff_image;
+  buff_image.valid = false;
+  unsigned int i;
+  int len;
+
+  if (!manage_fd()) return buff_image;
+
+  //todo: init buffered_image from image_t
+  buff_image.height = m_image.height;
+  buff_image.width = m_image.width;
+
+  switch (m_io) {
+    case io_method_t::IO_METHOD_READ:
+      len = read(m_fd, m_buffers[0].start, m_buffers[0].length);
+      if (len == -1) {
+        switch (errno) {
+          case EAGAIN:
+            return buff_image;
+          default:
+            throw std::runtime_error("Unable to read frame");
+        }
+      }
+      buff_image.data = m_buffers[0].start;
+      buff_image.valid = true;
+      return buff_image;
+      //return process_image(m_buffers[0].start, m_image.data, len);
+    case io_method_t::IO_METHOD_MMAP:
+      CLEAR(buff_image.buf);
+      buff_image.buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+      m_image.v4l2_fmt.type = buff_image.buf.type;
+      buff_image.buf.memory = V4L2_MEMORY_MMAP;
+
+      // Get current v4l2 pixel format
+      if (-1 == usb_cam::utils::xioctl(m_fd, static_cast<int>(VIDIOC_G_FMT), &m_image.v4l2_fmt)) {
+        switch (errno) {
+          case EAGAIN:
+            return buff_image;
+          default:
+            throw std::runtime_error("Invalid v4l2 format");
+        }
+      }
+      /// Dequeue buffer with the new image
+      if (-1 == usb_cam::utils::xioctl(m_fd, static_cast<int>(VIDIOC_DQBUF), &(buff_image.buf))) {
+        switch (errno) {
+          case EAGAIN:
+            return buff_image;
+          default:
+            throw std::runtime_error("Unable to retrieve frame with mmap");
+        }
+      }
+
+      // Get timestamp from V4L2 image buffer
+      m_image.stamp = usb_cam::utils::calc_img_timestamp(buff_image.buf.timestamp, m_epoch_time_shift_us);
+      buff_image.stamp = m_image.stamp;
+
+      assert(buff_image.buf.index < m_number_of_buffers);
+      buff_image.data = m_buffers[0].start;
+      buff_image.valid = true;
+      return buff_image;
+      //process_image(m_buffers[buf.index].start, m_image.data, buf.bytesused);
+      //reduce_image(m_buffers[buf.index].start);
+
+      /// Requeue buffer so it can be reused
+      //if (-1 == usb_cam::utils::xioctl(m_fd, static_cast<int>(VIDIOC_QBUF), &(buff_image.buf))) {
+      //  throw std::runtime_error("Unable to exchange buffer with the driver");
+      //}
+    case io_method_t::IO_METHOD_USERPTR:
+      CLEAR(buff_image.buf);
+
+      buff_image.buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+      buff_image.buf.memory = V4L2_MEMORY_USERPTR;
+
+      if (-1 == usb_cam::utils::xioctl(m_fd, static_cast<int>(VIDIOC_DQBUF), &(buff_image.buf))) {
+        switch (errno) {
+          case EAGAIN:
+            return buff_image;
+          default:
+            throw std::runtime_error("Unable to exchange buffer with driver");
+        }
+      }
+
+      // Get timestamp from V4L2 image buffer
+      m_image.stamp = usb_cam::utils::calc_img_timestamp(buff_image.buf.timestamp, m_epoch_time_shift_us);
+      buff_image.stamp = m_image.stamp;
+
+      for (i = 0; i < m_number_of_buffers; ++i) {
+        if (buff_image.buf.m.userptr == reinterpret_cast<uint64_t>(m_buffers[i].start) && \
+          buff_image.buf.length == m_buffers[i].length)
+        {
+          return buff_image;
+        }
+      }
+
+      assert(i < m_number_of_buffers);
+      buff_image.data = (char *) buff_image.buf.m.userptr;
+      buff_image.valid = true;
+      return buff_image;
+      //process_image(reinterpret_cast<const char *>(buff_image.buf.m.userptr), m_image.data, buff_image.buf.bytesused);
+      //if (-1 == usb_cam::utils::xioctl(m_fd, static_cast<int>(VIDIOC_QBUF), &(buff_image.buf))) {
+      //  throw std::runtime_error("Unable to exchange buffer with driver");
+      //}
+    case io_method_t::IO_METHOD_UNKNOWN:
+      throw std::invalid_argument("IO method unknown");
+    default:
+      throw std::invalid_argument("IO method unknown");
+  }
+
+}
+
+void UsbCam::release_buffered_image(buffered_image buff_image)
+{
+
+  switch (m_io) {
+    case io_method_t::IO_METHOD_READ:
+      // nothing to do
+      return;
+    case io_method_t::IO_METHOD_MMAP:
+    case io_method_t::IO_METHOD_USERPTR:
+      /// Requeue buffer so it can be reused
+      if (buff_image.valid){
+        if (-1 == usb_cam::utils::xioctl(m_fd, static_cast<int>(VIDIOC_QBUF), &(buff_image.buf)))
+        {
+          throw std::runtime_error("Unable to exchange buffer with the driver");
+        }
+      }
+      return;
+    case io_method_t::IO_METHOD_UNKNOWN:
+      throw std::invalid_argument("IO method unknown");
+  }
+
 }
 
 void UsbCam::read_frame()
@@ -136,6 +291,7 @@ void UsbCam::read_frame()
 
       assert(buf.index < m_number_of_buffers);
       process_image(m_buffers[buf.index].start, m_image.data, buf.bytesused);
+      reduce_image(m_buffers[buf.index].start);
 
       /// Requeue buffer so it can be reused
       if (-1 == usb_cam::utils::xioctl(m_fd, static_cast<int>(VIDIOC_QBUF), &buf)) {
@@ -526,6 +682,8 @@ void UsbCam::configure(
   m_image.set_size_in_bytes();
   m_framerate = parameters.framerate;
 
+  detection_image = cv::Mat(m_image.height, m_image.width, CV_8UC1);
+
   init_device();
 }
 
@@ -564,6 +722,20 @@ void UsbCam::get_image(char * destination)
   m_image.data = destination;
   // grab the image
   grab_image();
+}
+
+/// @brief Overload get_image so users can pass in an image pointer to fill
+/// @param destination destination to fill in with image
+void UsbCam::get_image(char * destination, double& illuminance)
+{
+  if ((m_image.width == 0) || (m_image.height == 0)) {
+    return;
+  }
+  // Set the destination pointer to be filled
+  m_image.data = destination;
+  // grab the image
+  grab_image();
+  illuminance = m_illuminance;
 }
 
 std::vector<capture_format_t> UsbCam::get_supported_formats()
@@ -614,7 +786,7 @@ std::vector<capture_format_t> UsbCam::get_supported_formats()
   return m_supported_formats;
 }
 
-void UsbCam::grab_image()
+bool UsbCam::manage_fd()
 {
   fd_set fds;
   struct timeval tv;
@@ -632,7 +804,7 @@ void UsbCam::grab_image()
   if (-1 == r) {
     if (EINTR == errno) {
       // interruped (e.g. maybe Ctrl + c) so don't throw anything
-      return;
+      return false;
     }
 
     std::cerr << "Something went wrong, exiting..." << errno << std::endl;
@@ -643,8 +815,12 @@ void UsbCam::grab_image()
     std::cerr << "Select timeout, exiting..." << std::endl;
     throw "select timeout";
   }
+  return true;
+}
 
-  read_frame();
+void UsbCam::grab_image()
+{
+  if (manage_fd()) read_frame();
 }
 
 // enables/disables auto focus

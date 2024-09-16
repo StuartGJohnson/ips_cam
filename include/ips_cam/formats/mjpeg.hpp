@@ -49,10 +49,10 @@ extern "C" {
 #include "libswscale/swscale.h"
 }
 
-#include "usb_cam/usb_cam.hpp"
-#include "usb_cam/formats/pixel_format_base.hpp"
-#include "usb_cam/formats/utils.hpp"
-#include "usb_cam/formats/av_pixel_format_helper.hpp"
+#include "ips_cam/usb_cam.hpp"
+#include "ips_cam/formats/pixel_format_base.hpp"
+#include "ips_cam/formats/utils.hpp"
+#include "ips_cam/formats/av_pixel_format_helper.hpp"
 
 
 namespace usb_cam

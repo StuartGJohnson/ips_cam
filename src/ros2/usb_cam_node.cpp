@@ -31,8 +31,8 @@
 #include <string>
 #include <vector>
 #include <filesystem>
-#include "usb_cam/usb_cam_node.hpp"
-#include "usb_cam/utils.hpp"
+#include "ips_cam/usb_cam_node.hpp"
+#include "ips_cam/utils.hpp"
 
 const char BASE_TOPIC_NAME[] = "image_raw";
 
@@ -44,11 +44,14 @@ UsbCamNode::UsbCamNode(const rclcpp::NodeOptions & node_options)
   m_camera(new usb_cam::UsbCam()),
   m_image_msg(new sensor_msgs::msg::Image()),
   m_compressed_img_msg(nullptr),
+  m_illuminance_msg(new sensor_msgs::msg::Illuminance()),
   m_image_publisher(std::make_shared<image_transport::CameraPublisher>(
       image_transport::create_camera_publisher(this, BASE_TOPIC_NAME,
       rclcpp::QoS {100}.get_rmw_qos_profile()))),
   m_compressed_image_publisher(nullptr),
   m_compressed_cam_info_publisher(nullptr),
+  m_illuminance_publisher(this->create_publisher<sensor_msgs::msg::Illuminance>(
+      std::string("illuminance"), rclcpp::QoS(100))),
   m_parameters(),
   m_camera_info_msg(new sensor_msgs::msg::CameraInfo()),
   m_service_capture(
@@ -97,6 +100,7 @@ UsbCamNode::~UsbCamNode()
   RCLCPP_WARN(this->get_logger(), "Shutting down");
   m_image_msg.reset();
   m_compressed_img_msg.reset();
+  m_illuminance_msg.reset();
   m_camera_info_msg.reset();
   m_camera_info.reset();
   m_timer.reset();
@@ -369,15 +373,21 @@ bool UsbCamNode::take_and_send_image()
   }
 
   // grab the image, pass image msg buffer to fill
-  m_camera->get_image(reinterpret_cast<char *>(&m_image_msg->data[0]));
+  //m_camera->get_image(reinterpret_cast<char *>(&m_image_msg->data[0]));
+  m_camera->get_image(reinterpret_cast<char *>(&m_image_msg->data[0]), m_illuminance_msg->illuminance);
 
   auto stamp = m_camera->get_image_timestamp();
   m_image_msg->header.stamp.sec = stamp.tv_sec;
   m_image_msg->header.stamp.nanosec = stamp.tv_nsec;
 
+  m_illuminance_msg->header.stamp.sec = stamp.tv_sec;
+  m_illuminance_msg->header.stamp.nanosec = stamp.tv_nsec;
+  m_illuminance_msg->variance = 0.0;
+
   *m_camera_info_msg = m_camera_info->getCameraInfo();
   m_camera_info_msg->header = m_image_msg->header;
   m_image_publisher->publish(*m_image_msg, *m_camera_info_msg);
+  m_illuminance_publisher->publish(*m_illuminance_msg);
   return true;
 }
 

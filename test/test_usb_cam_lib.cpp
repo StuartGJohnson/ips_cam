@@ -32,8 +32,9 @@
 #include <iostream>
 #include <thread>
 
-#include "usb_cam/usb_cam.hpp"
-#include "usb_cam/utils.hpp"
+#include "ips_cam/usb_cam.hpp"
+#include "ips_cam/utils.hpp"
+#include "ips_cam/usb_cam_node.hpp"
 
 TEST(test_usb_cam_lib, test_usb_cam_class) {
   usb_cam::UsbCam test_usb_cam;

@@ -35,8 +35,8 @@
 
 #include "opencv2/imgproc.hpp"
 
-#include "usb_cam/constants.hpp"
-#include "usb_cam/utils.hpp"
+#include "ips_cam/constants.hpp"
+#include "ips_cam/utils.hpp"
 
 
 namespace usb_cam

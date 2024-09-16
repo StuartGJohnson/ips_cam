@@ -31,8 +31,8 @@
 
 #include <string>
 
-#include "usb_cam/utils.hpp"
-#include "usb_cam/formats/utils.hpp"
+#include "ips_cam/utils.hpp"
+#include "ips_cam/formats/utils.hpp"
 
 
 using usb_cam::utils::io_method_from_string;

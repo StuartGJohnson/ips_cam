@@ -2,7 +2,14 @@
 .project
 .settings
 **__pycache__
-
+.catkin_workspace
+build/
+devel/
+install/
+log/
+recordings/
+output_videos/
+output_data/
 
 # documentation
 docs/xml
