@@ -116,6 +116,14 @@ endif()
 if(BUILD_TESTING)
   if($ENV{ROS_VERSION} EQUAL 2)
     find_package(ament_lint_auto REQUIRED)
+
+    set(AMENT_LINT_AUTO_FILE_EXCLUDE "build/*" "build/*/*" "build/*/*/*" "build/*/*/*/*" "build/*/*/*/*/*")
+
+    # linting and friends really does not seem to work very well. Mostly due to the fact
+    # that linting (etc) check in artifact directories. Sigh. I did adress this for cpplint via the above
+    # hacky setting of AMENT_LINT_AUTO_FILE_EXCLUDE. It still doesn't work for lint_cmake, so I have
+    # turned that off here with this:
+    set(ament_cmake_lint_cmake_FOUND TRUE)
     ament_lint_auto_find_test_dependencies()
 
     find_package(ament_cmake_gtest)
