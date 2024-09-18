@@ -60,7 +60,7 @@ using utils::io_method_t;
 UsbCam::UsbCam()
 : m_device_name(), m_io(io_method_t::IO_METHOD_MMAP), m_fd(-1),
   m_number_of_buffers(4), m_buffers(new usb_cam::utils::buffer[m_number_of_buffers]), m_image(),
-  m_illuminance(std::nan("")), m_avframe(NULL), m_avcodec(NULL), m_avoptions(NULL),
+  m_avframe(NULL), m_avcodec(NULL), m_avoptions(NULL),
   m_avcodec_context(NULL), m_is_capturing(false), m_framerate(0),
   m_epoch_time_shift_us(usb_cam::utils::get_epoch_time_shift_us()), m_supported_formats()
 {}
@@ -86,26 +86,6 @@ void UsbCam::process_image(const char * src, char * & dest, const int & bytes_us
   } else {
     m_image.pixel_format->convert(src, dest, bytes_used);
   }
-}
-
-/// @brief perform reduction ops on image. Look up possible V4L2 pixel formats in the
-/// `linux/videodev2.h` header file. Not this function does not copy the image.
-/// @param src a pointer to a V4L2 source image
-void UsbCam::reduce_image(const char * src)
-{
-  // form an image suitable for opencv reduction computations.
-  cv::Mat src_image(m_image.height, m_image.width, CV_8UC2, (char *) src);
-
-  cv::cvtColor(src_image, detection_image, cv::COLOR_YUV2GRAY_YUYV);
-
-  // compute mean image level of monochrome image
-  m_illuminance = cv::mean(detection_image)[0];
-
-  // if (m_image.pixel_format->requires_conversion() == false) {
-  //   memcpy(dest, src, m_image.size_in_bytes);
-  // } else {
-  //   m_image.pixel_format->convert(src, dest, bytes_used);
-  // }
 }
 
 buffered_image UsbCam::get_buffered_image()
@@ -291,7 +271,6 @@ void UsbCam::read_frame()
 
       assert(buf.index < m_number_of_buffers);
       process_image(m_buffers[buf.index].start, m_image.data, buf.bytesused);
-      reduce_image(m_buffers[buf.index].start);
 
       /// Requeue buffer so it can be reused
       if (-1 == usb_cam::utils::xioctl(m_fd, static_cast<int>(VIDIOC_QBUF), &buf)) {
@@ -682,8 +661,6 @@ void UsbCam::configure(
   m_image.set_size_in_bytes();
   m_framerate = parameters.framerate;
 
-  detection_image = cv::Mat(m_image.height, m_image.width, CV_8UC1);
-
   init_device();
 }
 
@@ -722,20 +699,6 @@ void UsbCam::get_image(char * destination)
   m_image.data = destination;
   // grab the image
   grab_image();
-}
-
-/// @brief Overload get_image so users can pass in an image pointer to fill
-/// @param destination destination to fill in with image
-void UsbCam::get_image(char * destination, double& illuminance)
-{
-  if ((m_image.width == 0) || (m_image.height == 0)) {
-    return;
-  }
-  // Set the destination pointer to be filled
-  m_image.data = destination;
-  // grab the image
-  grab_image();
-  illuminance = m_illuminance;
 }
 
 std::vector<capture_format_t> UsbCam::get_supported_formats()

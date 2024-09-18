@@ -3,6 +3,8 @@
 #include <string>
 #include <vector>
 #include <filesystem>
+//#include <chrono>
+//#include <thread>
 #include "ips_cam/ips_cam_node.hpp"
 //#include "ips_cam/utils.hpp"
 
@@ -265,8 +267,13 @@ void IpsCamNode::init()
 
     set_v4l2_params();
 
+    // an attempt to stabilize bahavior on USB 3.2 ports - a red herring
+    //std::this_thread::sleep_for(std::chrono::seconds(1));
+
     // start the camera
     m_camera->start();
+
+    //std::this_thread::sleep_for(std::chrono::seconds(1));
 
     // iterate through our targets and assign publishers. This is
     // from a nice suggestion by chatgpt 4o
@@ -358,6 +365,7 @@ bool IpsCamNode::take_and_process_image()
             from_tag_pose(tagPose, rosPose.pose);
             rosPose.header.stamp.sec = timestamp.tv_sec;
             rosPose.header.stamp.nanosec = timestamp.tv_nsec;
+            rosPose.header.frame_id = "/world";
 
             // find the publisher to dispatch this with
             auto it = publishers_map.find(tagPose.tag);

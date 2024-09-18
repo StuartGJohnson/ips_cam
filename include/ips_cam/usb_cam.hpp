@@ -413,7 +413,6 @@ private:
   void grab_image();
   void read_frame();
   void process_image(const char * src, char * & dest, const int & bytes_used);
-  void reduce_image(const char * src);
 
   void uninit_device();
   void close_device();
@@ -424,8 +423,6 @@ private:
   unsigned int m_number_of_buffers;
   std::shared_ptr<usb_cam::utils::buffer[]> m_buffers;
   image_t m_image;
-  double m_illuminance;
-  cv::Mat detection_image;
 
   AVFrame * m_avframe;
   int m_avframe_size;
