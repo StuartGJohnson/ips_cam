@@ -126,7 +126,7 @@ public:
 
   cv::Mat detection_image;
 
-  int hitCount = 0;
+  //int hitCount = 0;
 
  };
 

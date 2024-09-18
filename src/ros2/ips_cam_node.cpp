@@ -365,6 +365,9 @@ bool IpsCamNode::take_and_process_image()
             from_tag_pose(tagPose, rosPose.pose);
             rosPose.header.stamp.sec = timestamp.tv_sec;
             rosPose.header.stamp.nanosec = timestamp.tv_nsec;
+
+            // note that for visualization in rviz2, a static transform is handy
+            // e.g., ros2 run tf2_ros static_transform_publisher 0 0 0 0 0 0 world map
             rosPose.header.frame_id = "/world";
 
             // find the publisher to dispatch this with
