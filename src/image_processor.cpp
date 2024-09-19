@@ -510,7 +510,9 @@ TagPose TagPoseEstimator::estimate(cv::Mat worldCoords)
     TagPose tagPose;
     tagPose.x = m.at<double>(2, 0);
     tagPose.y = m.at<double>(3, 0);
-    tagPose.theta = std::atan2(m.at<double>(1, 0), m.at<double>(0, 0));
+    // note the negation accounts for the fact that we want the rotation
+    // angle from world space to tag space.
+    tagPose.theta = -std::atan2(m.at<double>(1, 0), m.at<double>(0, 0));
     return tagPose;
 
 }
