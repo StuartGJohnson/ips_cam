@@ -116,7 +116,6 @@ buffered_image UsbCam::get_buffered_image()
       buff_image.data = m_buffers[0].start;
       buff_image.valid = true;
       return buff_image;
-      //return process_image(m_buffers[0].start, m_image.data, len);
     case io_method_t::IO_METHOD_MMAP:
       CLEAR(buff_image.buf);
       buff_image.buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
@@ -147,16 +146,10 @@ buffered_image UsbCam::get_buffered_image()
       buff_image.stamp = m_image.stamp;
 
       assert(buff_image.buf.index < m_number_of_buffers);
-      buff_image.data = m_buffers[0].start;
+      buff_image.data = m_buffers[buff_image.buf.index].start;
       buff_image.valid = true;
       return buff_image;
-      //process_image(m_buffers[buf.index].start, m_image.data, buf.bytesused);
-      //reduce_image(m_buffers[buf.index].start);
 
-      /// Requeue buffer so it can be reused
-      //if (-1 == usb_cam::utils::xioctl(m_fd, static_cast<int>(VIDIOC_QBUF), &(buff_image.buf))) {
-      //  throw std::runtime_error("Unable to exchange buffer with the driver");
-      //}
     case io_method_t::IO_METHOD_USERPTR:
       CLEAR(buff_image.buf);
 
@@ -188,10 +181,6 @@ buffered_image UsbCam::get_buffered_image()
       buff_image.data = (char *) buff_image.buf.m.userptr;
       buff_image.valid = true;
       return buff_image;
-      //process_image(reinterpret_cast<const char *>(buff_image.buf.m.userptr), m_image.data, buff_image.buf.bytesused);
-      //if (-1 == usb_cam::utils::xioctl(m_fd, static_cast<int>(VIDIOC_QBUF), &(buff_image.buf))) {
-      //  throw std::runtime_error("Unable to exchange buffer with driver");
-      //}
     case io_method_t::IO_METHOD_UNKNOWN:
       throw std::invalid_argument("IO method unknown");
     default:
