@@ -33,6 +33,8 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <algorithm>  // For std::find
+#include <map>
 
 #include "camera_info_manager/camera_info_manager.hpp"
 #include "image_transport/image_transport.hpp"
@@ -48,9 +50,6 @@
 #include "ips_cam/usb_cam.hpp"
 #include "opencv2/imgproc.hpp"
 
-#include <vector>
-#include <algorithm>  // For std::find
-
 namespace ips_cam
 {
 
@@ -65,16 +64,16 @@ int findIndex(const std::vector<T>& vec, const T& value) {
 }
 
 /// @brief generate pose for ROS from image processing tools
-/// @param tagPose 
-/// @param ros_pose 
-void from_tag_pose(TagPose& tagPose , geometry_msgs::msg::Pose& ros_pose)
+/// @param tagPose
+/// @param ros_pose
+void from_tag_pose(TagPose& tagPose, geometry_msgs::msg::Pose& ros_pose)
 {
   ros_pose.position.x = tagPose.x;
   ros_pose.position.y = tagPose.y;
   ros_pose.position.z = tagPose.z;
   // quaternion from angle. Note this is planar motion, with rotation about zhat.
   tf2::Quaternion q;
-  tf2::Vector3 z(0.0,0.0,1.0);
+  tf2::Vector3 z(0.0, 0.0, 1.0);
   q.setRotation(z, tagPose.theta);
   ros_pose.orientation = tf2::toMsg(q);
 }
@@ -125,10 +124,7 @@ public:
   std::unique_ptr<ObjectTracker> tagFinder;
 
   cv::Mat detection_image;
-
-  //int hitCount = 0;
-
  };
 
-}
+}  // namespace ips_cam
 #endif  // IPS_CAM__IPS_CAM_NODE_HPP_

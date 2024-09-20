@@ -28,8 +28,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 
-#ifndef USB_CAM__USB_CAM_NODE_HPP_
-#define USB_CAM__USB_CAM_NODE_HPP_
+#ifndef IPS_CAM__USB_CAM_NODE_HPP_
+#define IPS_CAM__USB_CAM_NODE_HPP_
 
 #include <memory>
 #include <string>
@@ -101,4 +101,4 @@ public:
   rclcpp::node_interfaces::OnSetParametersCallbackHandle::SharedPtr m_parameters_callback_handle;
 };
 }  // namespace usb_cam
-#endif  // USB_CAM__USB_CAM_NODE_HPP_
+#endif  // IPS_CAM__USB_CAM_NODE_HPP_

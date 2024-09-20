@@ -1,14 +1,16 @@
-#ifndef IMAGE_PROCESSOR_HPP_
-#define IMAGE_PROCESSOR_HPP_
+#ifndef IPS_CAM__IMAGE_PROCESSOR_HPP_
+#define IPS_CAM__IMAGE_PROCESSOR_HPP_
+
+#include <limits.h>
+#include <unistd.h>
+#include <string>
+#include <fstream>
+#include <iostream>
+#include <vector>
+#include <map>
 
 #include <opencv2/opencv.hpp>
 #include <opencv2/aruco.hpp>
-
-#include <string>
-#include <limits.h>
-#include <unistd.h>
-#include <fstream>
-#include <iostream>
 
 namespace ips_cam
 {
@@ -18,8 +20,8 @@ struct CameraIntrinsics
     cv::Mat camera_matrix;
     cv::Mat dist_coeffs;
     // todo: fix this - these need to come from the file
-    int image_height = 720; // or height
-    int image_width = 1280; // or width
+    int image_height = 720;  // or height
+    int image_width = 1280;  // or width
 };
 
 struct IcsParams
@@ -44,10 +46,10 @@ struct TagPose
 {
     // The pose of an aruco tag in the world coordinate system.
     int tag;
-    double theta; // radians
-    double x; // world coordinate units (mm, but depends on units used in system ext/int calibration)
-    double y; // world coordinate units (mm, but depends on units used in system ext/int calibration)
-    double z; // world coordinate units - this value is known via settings
+    double theta;  // radians
+    double x;  // world coordinate units (e.g., mm)
+    double y;  // world coordinate units (e.g., mm)
+    double z;  // world coordinate units - this value is known via settings
     friend std::ostream &operator<<(std::ostream &os, const TagPose &tagPose)
     {
         double angleDeg = tagPose.theta * 180.0 / 3.14159265358979323846;
@@ -55,7 +57,6 @@ struct TagPose
          " loc: (" << tagPose.x << "," << tagPose.y << "," << tagPose.z << ")";
         return os;
     };
-
 };
 
 struct MarkerDetections
@@ -148,7 +149,6 @@ struct IndoorCoordSystem
         extMat = extMat * extFlip;
         extMatFull = extMatFull * extFlip;
     }
-
 };
 
 IndoorCoordSystem EstablishIndoorCoordinateSystem(
@@ -162,10 +162,8 @@ IndoorCoordSystem EstablishIndoorCoordinateSystem(
 
 class ImagePointsToWorldPoints
 {
-
     public:
-
-    //constructor
+    // constructor
     // prepare to repeatedly transform numpoints points at ICS coord z into
     // world points
     ImagePointsToWorldPoints(IndoorCoordSystem ics, double z, int numPoints);
@@ -181,32 +179,27 @@ class ImagePointsToWorldPoints
     cv::Mat onesCol;
     cv::Mat scale_numerator;
     cv::Mat adj_xy_z;
-
 };
 
-class TagPoseEstimator 
+class TagPoseEstimator
 {
     public:
-
-    //constructor
+    // constructor
     TagPoseEstimator();
 
-    //properties
+    // properties
     cv::Mat rhs;
     cv::Mat estimatorMatrix;
 
     // estimate tag pose indicated by ordered world coords.
     TagPose estimate(cv::Mat worldCoords);
-
 };
 
 class ObjectTracker
 {
-
     public:
-
-    //constructors
-    ObjectTracker(IndoorCoordSystem ics, std::map<int,double> tags);
+    // constructors
+    ObjectTracker(IndoorCoordSystem ics, std::map<int, double> tags);
 
     // properties
 
@@ -229,14 +222,15 @@ class ObjectTracker
     // methods
     MarkerDetections FindMarkers(cv::Mat inputImage);
 
-    std::vector<TagPose> FindMarkerPoses(MarkerDetections detections, std::vector<cv::Mat>& worldCorners);
+    std::vector<TagPose> FindMarkerPoses(
+        MarkerDetections detections,
+        std::vector<cv::Mat>& worldCorners);
 
     void ImageToWorld(MarkerDetections detections, std::vector<cv::Mat>& worldCorners);
 
     std::vector<TagPose> Track(cv::Mat inputImage);
-
 };
 
-}
+}  // namespace ips_cam
 
-#endif  // IMAGE_PROCESSOR_HPP_
+#endif  // IPS_CAM__IMAGE_PROCESSOR_HPP_

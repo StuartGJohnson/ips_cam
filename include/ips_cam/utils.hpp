@@ -26,8 +26,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef USB_CAM__UTILS_HPP_
-#define USB_CAM__UTILS_HPP_
+#ifndef IPS_CAM__UTILS_HPP_
+#define IPS_CAM__UTILS_HPP_
 
 extern "C" {
 #include <fcntl.h>  // for open()
@@ -198,4 +198,4 @@ inline std::map<std::string, v4l2_capability> available_devices()
 }  // namespace utils
 }  // namespace usb_cam
 
-#endif  // USB_CAM__UTILS_HPP_
+#endif  // IPS_CAM__UTILS_HPP_

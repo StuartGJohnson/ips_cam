@@ -373,8 +373,9 @@ bool UsbCamNode::take_and_send_image()
   }
 
   // grab the image, pass image msg buffer to fill
-  //m_camera->get_image(reinterpret_cast<char *>(&m_image_msg->data[0]));
-  m_camera->get_image(reinterpret_cast<char *>(&m_image_msg->data[0]), m_illuminance_msg->illuminance);
+  m_camera->get_image(
+    reinterpret_cast<char *>(&m_image_msg->data[0]),
+    m_illuminance_msg->illuminance);
 
   auto stamp = m_camera->get_image_timestamp();
   m_image_msg->header.stamp.sec = stamp.tv_sec;

@@ -3,10 +3,7 @@
 #include <string>
 #include <vector>
 #include <filesystem>
-//#include <chrono>
-//#include <thread>
 #include "ips_cam/ips_cam_node.hpp"
-//#include "ips_cam/utils.hpp"
 
 namespace ips_cam
 {
@@ -45,19 +42,19 @@ void IpsCamNode::declare_params()
     this->declare_parameter("pixel_format", "yuyv");
     this->declare_parameter("av_device_format", "YUV422P");
     this->declare_parameter("video_device", "/dev/video0");
-    this->declare_parameter("brightness", 50); // 0-255, -1 "leave alone"
-    this->declare_parameter("contrast", -1);   // 0-255, -1 "leave alone"
-    this->declare_parameter("saturation", -1); // 0-255, -1 "leave alone"
-    this->declare_parameter("sharpness", -1);  // 0-255, -1 "leave alone"
-    this->declare_parameter("gain", -1);       // 0-100?, -1 "leave alone"
+    this->declare_parameter("brightness", 50);  // 0-255, -1 "leave alone"
+    this->declare_parameter("contrast", -1);    // 0-255, -1 "leave alone"
+    this->declare_parameter("saturation", -1);  // 0-255, -1 "leave alone"
+    this->declare_parameter("sharpness", -1);   // 0-255, -1 "leave alone"
+    this->declare_parameter("gain", -1);        // 0-100?, -1 "leave alone"
     this->declare_parameter("auto_white_balance", true);
     this->declare_parameter("white_balance", 4000);
     this->declare_parameter("autoexposure", true);
     this->declare_parameter("exposure", 100);
     this->declare_parameter("autofocus", false);
-    this->declare_parameter("focus", -1); // 0-255, -1 "leave alone"
-    this->declare_parameter("ics_params_file", ""); // setup file
-    this->declare_parameter("tracking_params_file", ""); // setup file
+    this->declare_parameter("focus", -1);  // 0-255, -1 "leave alone"
+    this->declare_parameter("ics_params_file", "");  // setup file
+    this->declare_parameter("tracking_params_file", "");  // setup file
 }
 
 void IpsCamNode::get_params()
@@ -212,8 +209,7 @@ void IpsCamNode::set_v4l2_params()
 
 void IpsCamNode::init()
 {
-
-    if (!check_device()) 
+    if (!check_device())
     {
         rclcpp::shutdown();
         return;
@@ -222,7 +218,7 @@ void IpsCamNode::init()
     // image processing configs. note that these will
     // throw if they can't find things (like files).
     try
-    {       
+    {
         icsParams = load_ics_params(ics_params_path);
         trackingParams = load_tracking_params(tracking_params_path);
     }
@@ -234,7 +230,6 @@ void IpsCamNode::init()
         rclcpp::shutdown();
         return;
     }
-
 
     if (trackingParams.tag.size() == 0)
     {
@@ -267,13 +262,8 @@ void IpsCamNode::init()
 
     set_v4l2_params();
 
-    // an attempt to stabilize bahavior on USB 3.2 ports - a red herring
-    //std::this_thread::sleep_for(std::chrono::seconds(1));
-
     // start the camera
     m_camera->start();
-
-    //std::this_thread::sleep_for(std::chrono::seconds(1));
 
     // iterate through our targets and assign publishers. This is
     // from a nice suggestion by chatgpt 4o
@@ -293,19 +283,18 @@ void IpsCamNode::init()
         std::chrono::milliseconds(static_cast<int64_t>(period_ms)),
         std::bind(&IpsCamNode::update, this));
     RCLCPP_INFO_STREAM(this->get_logger(), "Timer triggering every " << period_ms << " ms");
-
 }
 
 bool IpsCamNode::check_device()
 {
-
     // Check if given device name is an available v4l2 device
     auto available_devices = usb_cam::utils::available_devices();
     if (available_devices.find(m_parameters.device_name) == available_devices.end())
     {
         RCLCPP_ERROR_STREAM(
             this->get_logger(),
-            "Device specified is not available or is not a vaild V4L2 device: `" << m_parameters.device_name << "`");
+            "Device specified is not available or is not a valid V4L2 device: `"
+            << m_parameters.device_name << "`");
         RCLCPP_INFO(this->get_logger(), "Available V4L2 devices are:");
         for (const auto &device : available_devices)
         {
@@ -334,7 +323,6 @@ void IpsCamNode::update()
 
 bool IpsCamNode::take_and_process_image()
 {
-
     usb_cam::buffered_image buff_im = m_camera->get_buffered_image();
 
     if (buff_im.valid)
@@ -342,12 +330,12 @@ bool IpsCamNode::take_and_process_image()
         // grab timestamp
         struct timespec timestamp = buff_im.stamp;
 
-        //process the frame
+        // process the frame
         // form an image suitable for opencv reduction computations.
         cv::Mat src_image(buff_im.height, buff_im.width, CV_8UC2, buff_im.data);
         cv::cvtColor(src_image, detection_image, cv::COLOR_YUV2GRAY_YUYV);
 
-        //done with the buffer - return to v4l2
+        // done with the buffer - return to v4l2
         m_camera->release_buffered_image(buff_im);
 
         // process this monochrome image into tag locations
@@ -356,11 +344,6 @@ bool IpsCamNode::take_and_process_image()
         //  convert and publish tag poses
         for (TagPose tagPose : tagPoses)
         {
-            // if (hitCount < 1)
-            // {
-            //   std::cout << "tag pose! " << tagPose.tag << std::endl;
-            //   hitCount ++;
-            // }
             geometry_msgs::msg::PoseStamped rosPose;
             from_tag_pose(tagPose, rosPose.pose);
             rosPose.header.stamp.sec = timestamp.tv_sec;
@@ -376,19 +359,14 @@ bool IpsCamNode::take_and_process_image()
             {
                 it->second->publish(rosPose);
             }
-
         }
         return true;
-
-    }
-    else
-    {
+    } else {
         return false;
     }
-
 }
 
-}
+}  // namespace ips_cam
 
 #include "rclcpp_components/register_node_macro.hpp"
 RCLCPP_COMPONENTS_REGISTER_NODE(ips_cam::IpsCamNode)

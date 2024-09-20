@@ -1,14 +1,15 @@
-#include <opencv2/opencv.hpp>
 #include <gtest/gtest.h>
-#include <opencv2/aruco.hpp>
-
-#include <string>
 #include <limits.h>
 #include <unistd.h>
+
+#include <cstdlib>  // For getenv
+#include <string>
 #include <fstream>
 #include <iostream>
+
+#include <opencv2/opencv.hpp>
+#include <opencv2/aruco.hpp>
 #include <ips_cam/image_processor.hpp>
-#include <cstdlib> // For getenv
 
 namespace ips_cam
 {
@@ -27,19 +28,15 @@ std::string expand_tilde(const std::string &path) {
 
 void check_file_existence(std::string filename)
 {
-
     // check file existence
     std::ifstream file;
     file.open(filename);
     if (file)
     {
         file.close();
-    }
-    else
-    {
+    } else {
         throw std::invalid_argument("non-existent file!");
     }
-
 }
 
 std::string expand_and_check(std::string filename1)
@@ -97,7 +94,7 @@ TrackingParams load_tracking_params(std::string filename1)
     {
         throw std::invalid_argument("In load_tracking_params: map construction failed.");
     }
-    for (unsigned int i=0; i<p.tag.size(); i++)
+    for (unsigned int i=0; i < p.tag.size(); i++)
     {
         p.tag_lookup.insert(std::make_pair(p.tag[i], p.tag_z[i]));
     }
@@ -113,9 +110,7 @@ void load_thingy(std::string filename)
     if (file)
     {
         file.close();
-    }
-    else
-    {
+    } else {
         throw std::invalid_argument("non-existent file!");
     }
 
@@ -131,7 +126,7 @@ void load_thingy(std::string filename)
     {
         throw std::invalid_argument("In thingy: map construction failed.");
     }
-    for (unsigned int i=0; i<thing1.size(); i++)
+    for (unsigned int i=0; i < thing1.size(); i++)
     {
         thing_map.insert(std::make_pair(thing1[i], thing2[i]));
     }
@@ -139,7 +134,7 @@ void load_thingy(std::string filename)
     std::cout << thing3 << std::endl;
 
     // display map
-    std::for_each(thing_map.begin(), thing_map.end(), [](const std::pair<int,double>& p)
+    std::for_each(thing_map.begin(), thing_map.end(), [](const std::pair<int, double>& p)
     {
         std::cout << p.first << "," << p.second << "\n";
     });
@@ -150,7 +145,6 @@ void load_thingy(std::string filename)
     {
         std::cout << thing_map[key] << std::endl;
     }
-
 }
 
 cv::Mat toHomoMat(std::vector<cv::Point2f> points)
@@ -197,14 +191,12 @@ void homoDivide(cv::Mat homoColumnVectors)
     for (int n = 0; n < homoColumnVectors.cols; n++)
     {
         cv::Mat c = homoColumnVectors.col(n);
-        //std::cout << c << std::endl;
         double denom = homoColumnVectors.at<double>(num_rows - 1, n);
         for (int i = 0; i < num_rows; i++)
         {
-            homoColumnVectors.at<double>(i,n) = 
-                homoColumnVectors.at<double>(i,n) / denom;
+            homoColumnVectors.at<double>(i, n) =
+                homoColumnVectors.at<double>(i, n) / denom;
         }
-        //std::cout << c << std::endl;
     }
 }
 
@@ -231,13 +223,9 @@ cv::Mat removeColumn(cv::Mat inputMatrix, int col)
     if (col == 0)
     {
         out = inputMatrix.colRange(1, numCols).clone();
-    }
-    else if (col == numCols - 1)
-    {
+    } else if (col == numCols - 1) {
         out = inputMatrix.colRange(0, numCols - 1).clone();
-    }
-    else
-    {
+    } else {
         // Concatenate columns to the left and to the right.
         // Question: do I need a clone() here?
         cv::hconcat(inputMatrix.colRange(0, col), inputMatrix.colRange(col + 1, numCols), out);
@@ -248,7 +236,6 @@ cv::Mat removeColumn(cv::Mat inputMatrix, int col)
 cv::Mat composeCameraExtrinsicMatrix(cv::Mat rvec, cv::Mat tvec)
 {
     // Construct the camera extrinsics matrix from the output of such things as cv::solvePnP()
-
     cv::Mat rmat;
     cv::Rodrigues(rvec, rmat);
     int mType = rvec.type();
@@ -265,7 +252,7 @@ cv::Mat composeExtrinsicFlip(int cbExtentX, int cbExtentY, double cbBlockMeters)
     // the pattern finder has chosen an offending orientation; correct!
     double xtrans = (cbExtentX - 1) * cbBlockMeters;
     double ytrans = (cbExtentY - 1) * cbBlockMeters;
-    double data[] = {-1, 0, 0, xtrans, 0, -1, 0, ytrans, 0, 0, 1, 0, 0,0,0,1};
+    double data[] = {-1, 0, 0, xtrans, 0, -1, 0, ytrans, 0, 0, 1, 0, 0, 0, 0, 1};
     cv::Mat extFlip(4, 4, CV_64F, data);
     // note the data is local, so clone on exit
     return extFlip.clone();
@@ -275,7 +262,6 @@ cv::Mat composeCameraExtrinsicMatrixFull(cv::Mat rvec, cv::Mat tvec)
 {
     // Construct the camera extrinsics matrix from the output of such things as cv::solvePnP().
     // In this case, add a final row for operations in camera coordinates.
-
     cv::Mat firstExtMat = composeCameraExtrinsicMatrix(rvec, tvec);
 
     double data[] = {0, 0, 0, 1};
@@ -290,14 +276,11 @@ cv::Mat composeCameraExtrinsicMatrixFull(cv::Mat rvec, cv::Mat tvec)
 
 ObjectTracker::ObjectTracker(IndoorCoordSystem ics_init, std::map<int, double> tags)
 {
-
     ics = ics_init;
-
     trackedTags = tags;
 
     for (auto const& tag : tags)
     {
-        //thing_map.insert(std::make_pair(thing1[i], thing2[i]));
         imgToWorld.emplace(tag.first, ImagePointsToWorldPoints(ics, tag.second, 4));
     }
 
@@ -306,18 +289,10 @@ ObjectTracker::ObjectTracker(IndoorCoordSystem ics_init, std::map<int, double> t
     dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_5X5_50);
 
     tagPoseEstimator = TagPoseEstimator();
-
-
-    // in this case we use a single z
-    // todo: construct a vector of these with an
-    // entry for each tag id # in the FOV.
-    //imgToWorld = ImagePointsToWorldPoints(ics_init, z, 4);
-
 }
 
 MarkerDetections ObjectTracker::FindMarkers(cv::Mat inputImage)
 {
-
     MarkerDetections markerDetections;
 
     // note that I leave it up to the caller to convert the image
@@ -330,12 +305,10 @@ MarkerDetections ObjectTracker::FindMarkers(cv::Mat inputImage)
         markerDetections.rejectedCandidates);
 
     return markerDetections;
-
 }
 
 std::vector<TagPose> ObjectTracker::Track(cv::Mat inputImage)
 {
-
     MarkerDetections detections = FindMarkers(inputImage);
 
     std::vector<cv::Mat> worldCorners;
@@ -345,21 +318,18 @@ std::vector<TagPose> ObjectTracker::Track(cv::Mat inputImage)
     std::vector<TagPose> out = FindMarkerPoses(detections, worldCorners);
 
     return out;
-
 }
 
-
-std::vector<TagPose> ObjectTracker::FindMarkerPoses(MarkerDetections detections, std::vector<cv::Mat>& worldCorners)
+std::vector<TagPose> ObjectTracker::FindMarkerPoses(
+    MarkerDetections detections, std::vector<cv::Mat>& worldCorners)
 {
-    // from the detected markers (image space), compute the 
+    // from the detected markers (image space), compute the
     // poses of the markers assuming they are in a known Z-plane
     // of the ICS.
 
     std::vector<TagPose> tagPoses;
 
     // step 1: use the ics to go from image space to world coordinates
-    //ImageToWorld(detections, worldCorners);
-
     // step 2: do a least-squares fit of the world coordinates to get
     // pose of each detected object.
 
@@ -367,19 +337,18 @@ std::vector<TagPose> ObjectTracker::FindMarkerPoses(MarkerDetections detections,
     {
         TagPose currentTag = tagPoseEstimator.estimate(worldCorners[i]);
         currentTag.tag = detections.markerIds[i];
-        // this tag has to be in the tag dicationary, since it generated
+        // this tag has to be in the tag dictionary, since it generated
         // a set of worldCorners!
         currentTag.z = trackedTags[currentTag.tag];
         tagPoses.push_back(currentTag);
     }
 
     return tagPoses;
-
 }
 
-void ObjectTracker::ImageToWorld(MarkerDetections detections, std::vector<cv::Mat>& worldCorners)
+void ObjectTracker::ImageToWorld(
+    MarkerDetections detections, std::vector<cv::Mat>& worldCorners)
 {
-
     for (unsigned int i=0; i < detections.markerCorners.size(); i++)
     {
         auto detectedCorners = detections.markerCorners[i];
@@ -395,25 +364,24 @@ void ObjectTracker::ImageToWorld(MarkerDetections detections, std::vector<cv::Ma
             worldCorners.push_back(thing);
         }
     }
-
 }
 
-ImagePointsToWorldPoints::ImagePointsToWorldPoints(IndoorCoordSystem ics, double z, int numPoints)
+ImagePointsToWorldPoints::ImagePointsToWorldPoints(
+    IndoorCoordSystem ics, double z, int numPoints)
 {
     cv::Mat zvec = cv::Mat(1, numPoints, CV_64F);
     zvec = z;
     Init(ics, zvec, numPoints);
-
 }
 
-ImagePointsToWorldPoints::ImagePointsToWorldPoints(IndoorCoordSystem ics, cv::Mat zvec, int numPoints)
+ImagePointsToWorldPoints::ImagePointsToWorldPoints(
+    IndoorCoordSystem ics, cv::Mat zvec, int numPoints)
 {
     Init(ics, zvec, numPoints);
 }
 
 void ImagePointsToWorldPoints::Init(IndoorCoordSystem ics, cv::Mat zvec, int numPoints)
 {
-
     // form the full camera projection matrix
     cv::Mat p = ics.cameraIntrinsics.camera_matrix * ics.extMat;
     cv::Mat pxy = removeColumn(p, 2);
@@ -432,7 +400,6 @@ void ImagePointsToWorldPoints::Init(IndoorCoordSystem ics, cv::Mat zvec, int num
 
 cv::Mat ImagePointsToWorldPoints::ToWorld(cv::Mat imagePointsHomo)
 {
-
     cv::Mat raw_xy = pxy_inverse * imagePointsHomo;
 
     // compute the scale factor from the last row
@@ -448,7 +415,6 @@ cv::Mat ImagePointsToWorldPoints::ToWorld(cv::Mat imagePointsHomo)
 
 TagPoseEstimator::TagPoseEstimator()
 {
-
     // define the pattern as a matrix of column vectors; x,x,x,x,y,y,y,y
     double tag_points_data[] = {-0.5, 0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5};
     cv::Mat tagCoords = cv::Mat(2, 4, CV_64F, tag_points_data);
@@ -486,14 +452,11 @@ TagPoseEstimator::TagPoseEstimator()
     // prep for doing least squares via the normal equations
     cv::Mat inverseTmp;
     cv::invert(designMatTranspose * designMat, inverseTmp);
-    //cv::Mat m = inverseTmp * designMatTranspose * rhs;
     estimatorMatrix = inverseTmp * designMatTranspose;
-
 }
 
 TagPose TagPoseEstimator::estimate(cv::Mat worldCoords)
 {
-
     int ncols = worldCoords.cols;
     int currentRow = 0;
     for (int i = 0; i < ncols; i++)
@@ -511,10 +474,10 @@ TagPose TagPoseEstimator::estimate(cv::Mat worldCoords)
     tagPose.x = m.at<double>(2, 0);
     tagPose.y = m.at<double>(3, 0);
     // note the negation accounts for the fact that we want the rotation
-    // angle from world space to tag space.
+    // angle from world space to tag space. And things were spinning
+    // the wrong way in rviz2!
     tagPose.theta = -std::atan2(m.at<double>(1, 0), m.at<double>(0, 0));
     return tagPose;
-
 }
 
 IndoorCoordSystem EstablishIndoorCoordinateSystem(
@@ -526,7 +489,6 @@ IndoorCoordSystem EstablishIndoorCoordinateSystem(
     cv::Mat cbPatternImage = cv::imread(checkerboard_image_file, cv::IMREAD_COLOR);
     cv::Mat cbOriginImage = cv::imread(origin_image_file, cv::IMREAD_COLOR);
     CameraIntrinsics camIntrinsics = load_camera_intrinsics(intrinsics_file);
-   
 
     IndoorCoordSystem ics = EstablishIndoorCoordinateSystem(
         icsParams.cbExtentX, icsParams.cbExtentY, icsParams.cbBlockSize,
@@ -534,7 +496,6 @@ IndoorCoordSystem EstablishIndoorCoordinateSystem(
         cbPatternImage, cbOriginImage, icsParams.originTag);
 
     return ics;
-
 }
 
 IndoorCoordSystem EstablishIndoorCoordinateSystem(
@@ -542,13 +503,15 @@ IndoorCoordSystem EstablishIndoorCoordinateSystem(
     CameraIntrinsics camIntrinsics,
     cv::Mat cbPatternImage, cv::Mat cbOriginImage, std::map<int, double> originTag)
 {
-    cv::Size pattern_size(cbExtentX, cbExtentY); // Chessboard pattern size
+    cv::Size pattern_size(cbExtentX, cbExtentY);  // Chessboard pattern size
     std::vector<cv::Point3d> object_points;
     for (int i = 0; i < pattern_size.height; ++i)
     {
         for (int j = 0; j < pattern_size.width; ++j)
         {
-            object_points.push_back(cv::Point3d(cbBlockMeters * j, cbBlockMeters * (pattern_size.height - i - 1), 0));
+            object_points.push_back(
+                cv::Point3d(cbBlockMeters * j, cbBlockMeters * (pattern_size.height - i - 1), 0)
+                );
         }
     }
 
@@ -560,7 +523,8 @@ IndoorCoordSystem EstablishIndoorCoordinateSystem(
     if (found)
     {
         cv::cornerSubPix(gray, corners, cv::Size(11, 11), cv::Size(-1, -1),
-                         cv::TermCriteria(cv::TermCriteria::EPS + cv::TermCriteria::COUNT, 30, 0.1));
+                         cv::TermCriteria(
+                            cv::TermCriteria::EPS + cv::TermCriteria::COUNT, 30, 0.1));
     }
 
     std::vector<cv::Point2d> image_points;
@@ -569,7 +533,14 @@ IndoorCoordSystem EstablishIndoorCoordinateSystem(
 
     IndoorCoordSystem ics = IndoorCoordSystem();
 
-    cv::solvePnP(object_points, image_points, camIntrinsics.camera_matrix, camIntrinsics.dist_coeffs, ics.rvec, ics.tvec, false, cv::SOLVEPNP_IPPE);
+    cv::solvePnP(
+        object_points,
+        image_points,
+        camIntrinsics.camera_matrix,
+        camIntrinsics.dist_coeffs,
+        ics.rvec, ics.tvec,
+        false,
+        cv::SOLVEPNP_IPPE);
 
     ics.cameraIntrinsics = camIntrinsics;
     ics.SetExtrinsics();
@@ -579,9 +550,6 @@ IndoorCoordSystem EstablishIndoorCoordinateSystem(
     std::vector<TagPose> tagPoses = tracker.Track(cbOriginImage);
 
     // assume one tag, dump the position
-
-    //std::cout << tagPoses[0] << std::endl;
-
     // either this tag is near 0,0 - or it is near the other possible origin at
     // cbBlockMeters * (cbExtentX-1, cbExtentY-1), or - I'm confused!
 
@@ -598,24 +566,15 @@ IndoorCoordSystem EstablishIndoorCoordinateSystem(
     {
         // excellent!
         return ics;
-    }
-    else if (errorIncorrect <= tol)
-    {
+    } else if (errorIncorrect <= tol) {
         // rotate and translate to the other coordinate system and
         // update the extrinsic matrices
         ics.SetFlippedExtrinsics(cbExtentX, cbExtentY, cbBlockMeters);
         return ics;
-    }
-    else
-    {
+    } else {
         // oops!
         throw std::domain_error("ICS Origin Marker not at an expected location!");
     }
-
 }
 
-}
-
-
-
-
+}  // namespace ips_cam

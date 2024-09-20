@@ -1,12 +1,14 @@
-#include <opencv2/opencv.hpp>
-#include <gtest/gtest.h>
-#include <opencv2/aruco.hpp>
-
-#include <string>
 #include <limits.h>
 #include <unistd.h>
+#include <gtest/gtest.h>
+
+#include <string>
 #include <fstream>
 #include <iostream>
+
+#include <opencv2/opencv.hpp>
+#include <opencv2/aruco.hpp>
+
 #include <ips_cam/image_processor.hpp>
 
 std::string getexepath()
@@ -43,21 +45,19 @@ void functionThatThrows()
 
 ips_cam::IndoorCoordSystem SetupICS(int origin = 2)
 {
-
     cv::Mat cbPatternImage = cv::imread("../../../im_ref2.png", cv::IMREAD_COLOR);
     cv::Mat cbOriginImage;
-    if ( origin==1 )
+    if ( origin == 1 )
     {
         cbOriginImage = cv::imread("../../../im_ref2_aruco1.png", cv::IMREAD_COLOR);
-    }
-    else
-    {
+    } else {
         cbOriginImage = cv::imread("../../../im_ref2_aruco2.png", cv::IMREAD_COLOR);
     }
-    ips_cam::CameraIntrinsics camIntrinsics = ips_cam::load_camera_intrinsics("../../../camera_intrinsics.yml");
+    ips_cam::CameraIntrinsics camIntrinsics =
+        ips_cam::load_camera_intrinsics("../../../camera_intrinsics.yml");
 
     std::map<int, double> originTag;
-    originTag[1]  = 0.0;
+    originTag[1] = 0.0;
 
     ips_cam::IndoorCoordSystem ics = ips_cam::EstablishIndoorCoordinateSystem(
         6, 4, 198.0,
@@ -65,18 +65,18 @@ ips_cam::IndoorCoordSystem SetupICS(int origin = 2)
         cbPatternImage, cbOriginImage, originTag);
 
     return ics;
-
 }
 
 TEST(test_image_processing, test_ics_config)
 {
-
     auto aruco1 = cv::imread("../../../im_ref2_aruco1.png", cv::IMREAD_COLOR);
     auto aruco2 = cv::imread("../../../im_ref2_aruco2.png", cv::IMREAD_COLOR);
 
     // use the configuration file to bring up the ics
-    ips_cam::IcsParams ip = ips_cam::load_ics_params("~/IndoorPositioningSystem/ips_config/ics_params.yml");
-    //TrackingParams tp = load_tracking_params("~/IndoorPositioningSystem/ips_config/tracking.yml");
+    ips_cam::IcsParams ip =
+        ips_cam::load_ics_params("~/IndoorPositioningSystem/ips_config/ics_params.yml");
+    // TrackingParams tp =
+    //    load_tracking_params("~/IndoorPositioningSystem/ips_config/tracking.yml");
 
     ips_cam::IndoorCoordSystem ics = ips_cam::EstablishIndoorCoordinateSystem(ip);
 
@@ -92,13 +92,11 @@ TEST(test_image_processing, test_ics_config)
     std::cout << "aruco1: "  << poses11[0] <<std::endl;
     auto poses12 = tagFinder1.Track(aruco2);
     std::cout << "aruco2: "  << poses12[0] <<std::endl;
-
 }
 
 
 TEST(test_image_processing, test_ics)
 {
-
     auto aruco1 = cv::imread("../../../im_ref2_aruco1.png", cv::IMREAD_COLOR);
     auto aruco2 = cv::imread("../../../im_ref2_aruco2.png", cv::IMREAD_COLOR);
 
@@ -117,7 +115,6 @@ TEST(test_image_processing, test_ics)
     auto poses12 = tagFinder1.Track(aruco2);
     std::cout << "aruco2: "  << poses12[0] <<std::endl;
 
-
     ips_cam::IndoorCoordSystem ics2 = SetupICS(2);
 
     std::cout << "ics2:" <<std::endl;
@@ -130,7 +127,7 @@ TEST(test_image_processing, test_ics)
 
 TEST(test_image_processing, test_find_pattern)
 {
-    cv::Size pattern_size(6, 4); // Chessboard pattern size
+    cv::Size pattern_size(6, 4);  // Chessboard pattern size
     // world coord choice 1
     std::vector<cv::Point3d> object_points_1;
     std::vector<cv::Point3d> object_points_2;
@@ -138,10 +135,8 @@ TEST(test_image_processing, test_find_pattern)
     {
         for (int j = 0; j < pattern_size.width; ++j)
         {
-            // object_points.push_back(cv::Point3d(pattern_size.width - j - 1, pattern_size.height - i - 1, 0));
             object_points_1.push_back(cv::Point3d(j, pattern_size.height - i - 1, 0));
             object_points_2.push_back(cv::Point3d(pattern_size.width - j - 1, i, 0));
-            // object_points_1.push_back(cv::Point3d(j, i, 0));
         }
     }
     // std::cout << object_points[0] << std::endl;
@@ -173,12 +168,15 @@ TEST(test_image_processing, test_find_pattern)
     if (found)
     {
         cv::cornerSubPix(gray, corners, cv::Size(11, 11), cv::Size(-1, -1),
-                         cv::TermCriteria(cv::TermCriteria::EPS + cv::TermCriteria::COUNT, 30, 0.1));
+                         cv::TermCriteria(
+                            cv::TermCriteria::EPS + cv::TermCriteria::COUNT, 30, 0.1)
+                            );
         cv::drawChessboardCorners(outputImage_0, pattern_size, corners, found);
     }
 
     // OK, so the chessboard finder returns coordinate systems with Z reversed, and
-    // x along the the long axis of the chessboard. To fix Z, I can either reverse x or y in world coords.
+    // x along the the long axis of the chessboard. To fix Z, I can either
+    // reverse x or y in world coords.
 
     std::vector<cv::Point2d> image_points;
 
@@ -189,7 +187,8 @@ TEST(test_image_processing, test_find_pattern)
 
     // now obtain the camera extrinsics for this image
     // we will need some intrinsics...
-    ips_cam::CameraIntrinsics camIntrinsics = ips_cam::load_camera_intrinsics("../../../camera_intrinsics.yml");
+    ips_cam::CameraIntrinsics camIntrinsics =
+       ips_cam::load_camera_intrinsics("../../../camera_intrinsics.yml");
 
     // std::vector<cv::Vec3d> rvec, tvec;
 
@@ -201,10 +200,26 @@ TEST(test_image_processing, test_find_pattern)
     // std::cout << camIntrinsics.camera_matrix << std::endl;
     // std::cout << camIntrinsics.dist_coeffs << std::endl;
 
-    // cv::solvePnP(object_points, corners, camIntrinsics.camera_matrix, camIntrinsics.dist_coeffs, rvec, tvec, false, cv::SOLVEPNP_IPPE);
-    cv::solvePnP(object_points_1, image_points, camIntrinsics.camera_matrix, camIntrinsics.dist_coeffs, rvec, tvec, false, cv::SOLVEPNP_IPPE);
+    // cv::solvePnP(object_points,
+    // corners,
+    // camIntrinsics.camera_matrix,
+    // camIntrinsics.dist_coeffs,
+    // rvec, tvec, false, cv::SOLVEPNP_IPPE);
+    cv::solvePnP(
+        object_points_1,
+        image_points,
+        camIntrinsics.camera_matrix,
+        camIntrinsics.dist_coeffs,
+        rvec,
+        tvec,
+        false,
+        cv::SOLVEPNP_IPPE);
 
-    cv::drawFrameAxes(outputImage_1, camIntrinsics.camera_matrix, camIntrinsics.dist_coeffs, rvec, tvec, 2.0);
+    cv::drawFrameAxes(
+        outputImage_1,
+        camIntrinsics.camera_matrix,
+        camIntrinsics.dist_coeffs,
+        rvec, tvec, 2.0);
 
     // std::cout << rvec << std::endl;
     // std::cout << tvec << std::endl;
@@ -212,9 +227,17 @@ TEST(test_image_processing, test_find_pattern)
     cv::imshow("pattern axes 1", outputImage_1);
     cv::waitKey(5000);
 
-    cv::solvePnP(object_points_2, image_points, camIntrinsics.camera_matrix, camIntrinsics.dist_coeffs, rvec, tvec, false, cv::SOLVEPNP_IPPE);
+    cv::solvePnP(
+        object_points_2,
+        image_points,
+        camIntrinsics.camera_matrix,
+        camIntrinsics.dist_coeffs,
+        rvec, tvec, false, cv::SOLVEPNP_IPPE);
 
-    cv::drawFrameAxes(outputImage_2, camIntrinsics.camera_matrix, camIntrinsics.dist_coeffs, rvec, tvec, 2.0);
+    cv::drawFrameAxes(
+        outputImage_2,
+        camIntrinsics.camera_matrix,
+        camIntrinsics.dist_coeffs, rvec, tvec, 2.0);
 
     std::cout << rvec << std::endl;
     std::cout << tvec << std::endl;
@@ -346,7 +369,6 @@ TEST(test_image_processing, test_matrix_tools)
 
 TEST(test_image_processing, test_drawing)
 {
-
     cv::Mat frame = cv::imread("../../../im_ref.png", cv::IMREAD_COLOR);
 
     cv::imshow("raw frame", frame);
@@ -376,20 +398,19 @@ TEST(test_image_processing, test_stuff)
 
 TEST(test_image_processing, test_bench_aruco)
 {
-
     cv::Mat frame;
 
     std::cout << get_current_dir_name() << std::endl;
 
-    //frame = cv::imread("../../../im_aruco.png", cv::IMREAD_COLOR);
-    //frame = cv::imread("../../../im_ref2_aruco1.png", cv::IMREAD_COLOR);
+    // frame = cv::imread("../../../im_aruco.png", cv::IMREAD_COLOR);
+    // frame = cv::imread("../../../im_ref2_aruco1.png", cv::IMREAD_COLOR);
     frame = cv::imread("../../../im_ref2.png", cv::IMREAD_COLOR);
 
     ips_cam::IndoorCoordSystem ics = SetupICS();
 
     std::map<int, double> tags;
     tags[1] = 0.0;
-    
+
     ips_cam::ObjectTracker tagFinder = ips_cam::ObjectTracker(ics, tags);
 
 
@@ -406,7 +427,7 @@ TEST(test_image_processing, test_bench_aruco)
     }
 
     auto finish = std::chrono::steady_clock::now();
-    double elapsed_seconds = 
+    double elapsed_seconds =
         std::chrono::duration_cast<std::chrono::duration<double>>(finish - start).count();
 
     std::cout << elapsed_seconds << std::endl;
@@ -414,7 +435,6 @@ TEST(test_image_processing, test_bench_aruco)
     std::cout << data[42] << std::endl;
 
     std::cout << "fps: " << maxIters / elapsed_seconds << std::endl;
-
 }
 
 TEST(test_image_processing, test_find_aruco)
@@ -423,9 +443,9 @@ TEST(test_image_processing, test_find_aruco)
 
     std::cout << get_current_dir_name() << std::endl;
 
-    //frame = cv::imread("../../../im_aruco.png", cv::IMREAD_COLOR);
+    // frame = cv::imread("../../../im_aruco.png", cv::IMREAD_COLOR);
     frame = cv::imread("../../../im_ref2_aruco1.png", cv::IMREAD_COLOR);
-    //frame = cv::imread("../../../im_ref2.png", cv::IMREAD_COLOR);
+    // frame = cv::imread("../../../im_ref2.png", cv::IMREAD_COLOR);
 
     cv::imshow("hi", frame);
     cv::waitKey(2000);
@@ -434,7 +454,7 @@ TEST(test_image_processing, test_find_aruco)
 
     std::map<int, double> tags;
     tags[1] = 0.0;
-    
+
     ips_cam::ObjectTracker tagFinder = ips_cam::ObjectTracker(ics, tags);
 
     ips_cam::MarkerDetections foundTags = tagFinder.FindMarkers(frame);
@@ -453,9 +473,9 @@ TEST(test_image_processing, test_find_aruco)
      0.05, ics.cameraIntrinsics.camera_matrix,
      ics.cameraIntrinsics.dist_coeffs, rvecs, tvecs);
     // draw axis for each marker
-    for(uint i=0; i < foundTags.markerIds.size(); i++)
+    for(uint i = 0; i < foundTags.markerIds.size(); i++)
         cv::aruco::drawAxis(outputImage,
-             ics.cameraIntrinsics.camera_matrix, 
+             ics.cameraIntrinsics.camera_matrix,
              ics.cameraIntrinsics.dist_coeffs, rvecs[i], tvecs[i], 0.1);
 
 
@@ -465,23 +485,22 @@ TEST(test_image_processing, test_find_aruco)
     tagFinder.ImageToWorld(foundTags, worldCorners);
     std::vector<ips_cam::TagPose> poses = tagFinder.FindMarkerPoses(foundTags, worldCorners);
 
-    if (foundTags.markerIds.size()>0)
+    if (foundTags.markerIds.size() > 0)
     {
         std::cout << worldCorners[0] << std::endl;
         std::cout << poses[0] << std::endl;
-        //std::vector<TagPose> poses2 = tagFinder.Track(frame);
-        //std::cout << poses2[0] << std::endl;
+        // std::vector<TagPose> poses2 = tagFinder.Track(frame);
+        // std::cout << poses2[0] << std::endl;
     }
-
 }
 
 TEST(test_image_processing, test_image_to_world)
 {
-
     // cast some world points to an image and use
     // the ImageToWorld tech to get them back
     // these are in mm. A square is 198 mm.
-    double world_points_data[] = {-100, 37, 1000, 750, 422, 240, 512, 677, 82, -98, 0, 10, 20 ,-20, 50};
+    double world_points_data[] =
+       {-100, 37, 1000, 750, 422, 240, 512, 677, 82, -98, 0, 10, 20, -20, 50};
     cv::Mat world_points = cv::Mat(3, 5, CV_64F, world_points_data);
 
     cv::Mat world_points_homo = ips_cam::toHomo(world_points);
@@ -491,11 +510,11 @@ TEST(test_image_processing, test_image_to_world)
     cv::Mat camMatrix = ics.cameraIntrinsics.camera_matrix * ics.extMat;
 
     cv::Mat cam_points_homo = camMatrix * world_points_homo;
-    //std::cout << cam_points_homo << std::endl;
+    // std::cout << cam_points_homo << std::endl;
 
     ips_cam::homoDivide(cam_points_homo);
 
-    //std::cout << cam_points_homo << std::endl;
+    // std::cout << cam_points_homo << std::endl;
 
     cv::Mat cvec = ips_cam::extractRow(world_points, 2);
 
@@ -517,17 +536,16 @@ TEST(test_image_processing, test_image_to_world)
     std::cout << error << std::endl;
 
     ASSERT_TRUE(error <= 0.1);
-
 }
 
 TEST(test_image_processing, test_rigid_xform)
 {
-
-    // assume a set of ICS world space coordinates returned by detectMarkers/etc which correspond to:
+    // assume a set of ICS world space coordinates returned by detectMarkers/etc
+    // which correspond to:
     // (-markerLength/2, markerLength/2, 0),
     // (markerLength/2, markerLength/2, 0),
     // (markerLength/2, -markerLength/2, 0),
-    //(-markerLength/2, -markerLength/2, 0)
+    // (-markerLength/2, -markerLength/2, 0)
 
     // define the pattern as a matrix of column vectors; x,x,x,x,y,y,y,y
     double tag_points_data[] = {-0.5, 0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5};
@@ -567,10 +585,11 @@ TEST(test_image_processing, test_rigid_xform)
 TEST(test_image_processing, test_yaml_read)
 {
     // load calibration data
-    ips_cam::CameraIntrinsics camIntrinsics = ips_cam::load_camera_intrinsics("../../../camera_intrinsics.yml");
+    ips_cam::CameraIntrinsics camIntrinsics =
+      ips_cam::load_camera_intrinsics("../../../camera_intrinsics.yml");
     std::cout << camIntrinsics.camera_matrix << std::endl;
     std::cout << camIntrinsics.dist_coeffs << std::endl;
-    ASSERT_TRUE(camIntrinsics.camera_matrix.dims == 2);
+    ASSERT_EQ(camIntrinsics.camera_matrix.dims, 2);
 
     bool success = false;
     try
@@ -586,10 +605,10 @@ TEST(test_image_processing, test_yaml_read)
 
 TEST(test_image_processing, test_yaml_read2)
 {
-
-    ips_cam::IcsParams ip = ips_cam::load_ics_params("~/IndoorPositioningSystem/ips_config/ics_params.yml");
-    ips_cam::TrackingParams tp = ips_cam::load_tracking_params("~/IndoorPositioningSystem/ips_config/tracking.yml");
-   
+    ips_cam::IcsParams ip =
+       ips_cam::load_ics_params("~/IndoorPositioningSystem/ips_config/ics_params.yml");
+    ips_cam::TrackingParams tp =
+       ips_cam::load_tracking_params("~/IndoorPositioningSystem/ips_config/tracking.yml");
 }
 
 TEST(test_image_processing, test_yaml_read_exp)

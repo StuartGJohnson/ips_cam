@@ -1,19 +1,23 @@
-#include <opencv2/opencv.hpp>
 #include <gtest/gtest.h>
+#include <yaml-cpp/yaml.h>
+#include <limits.h>
+#include <unistd.h>
+
+#include <vector>
+#include <string>
+#include <fstream>
+#include <iostream>
+
+#include <opencv2/opencv.hpp>
 #include <opencv2/aruco.hpp>
 
 #include "rclcpp/rclcpp.hpp"
-#include <yaml-cpp/yaml.h>
-#include <vector>
-#include <string>
-#include <limits.h>
-#include <unistd.h>
-#include <fstream>
-#include <iostream>
 #include "ips_cam/ips_cam_node.hpp"
 
 bool is_integer(const std::string& s) {
-    return !s.empty() && std::find_if(s.begin(), s.end(), [](unsigned char c) { return !std::isdigit(c); }) == s.end();
+    return !s.empty() &&
+    std::find_if(s.begin(), s.end(), [](unsigned char c) { return !std::isdigit(c); })
+        == s.end();
 }
 
 bool is_boolean(const std::string& s) {
@@ -29,40 +33,37 @@ bool is_float(const std::string& s) {
 
 
 // Helper function to load parameters from a YAML file into a vector of rclcpp::Parameter
-std::vector<rclcpp::Parameter> load_parameters_from_yaml(const std::string & yaml_filename, const std::string & node_name) 
+std::vector<rclcpp::Parameter> load_parameters_from_yaml(
+    const std::string & yaml_filename, const std::string & node_name)
 {
     YAML::Node yaml_file = YAML::LoadFile(yaml_filename);
     std::vector<rclcpp::Parameter> parameters;
 
-    if (yaml_file[node_name] && yaml_file[node_name]["ros__parameters"]) 
+    if (yaml_file[node_name] && yaml_file[node_name]["ros__parameters"])
     {
         auto params_node = yaml_file[node_name]["ros__parameters"];
 
-        for (const auto & param : params_node) 
+        for (const auto & param : params_node)
         {
             std::string param_name = param.first.as<std::string>();
 
-            if (param.second.IsScalar()) 
+            if (param.second.IsScalar())
             {
                 std::string param_as_string = param.second.as<std::string>();
 
                 // Check if it's an integer without using exceptions
                 if (is_integer(param_as_string)) {
                     parameters.emplace_back(param_name, param.second.as<int>());
-                }
-                // Check if it's a boolean without using exceptions
-                else if (is_boolean(param_as_string)) {
+                } else if (is_boolean(param_as_string)) {
+                    // Check if it's a boolean without using exceptions
                     parameters.emplace_back(param_name, param.second.as<bool>());
-                }
-                // Check if it's a floating point number
-                else if (is_float(param_as_string)) {
+                } else if (is_float(param_as_string)) {
+                    // Check if it's a floating point number
                     parameters.emplace_back(param_name, param.second.as<double>());
-                }
-                else {
+                } else {
                     // If no matching type, store as string or handle the type conversion failure
                     parameters.emplace_back(param_name, param.second.as<std::string>());
                 }
-                        
             }
         }
     }
@@ -84,7 +85,7 @@ void dump(geometry_msgs::msg::Quaternion q)
 class MyNode : public rclcpp::Node
 {
 public:
-  MyNode(const rclcpp::NodeOptions & node_options) : Node("my_node", node_options)
+  explicit MyNode(const rclcpp::NodeOptions & node_options) : Node("my_node", node_options)
   {
     this->declare_parameter<int>("param1", 0);
     this->declare_parameter<std::string>("param2", "Cheese");
@@ -101,19 +102,15 @@ public:
     RCLCPP_INFO(this->get_logger(), "param1: %d", param1);
     RCLCPP_INFO(this->get_logger(), "param2: %s", param2.c_str());
     RCLCPP_INFO(this->get_logger(), "param3: %d", param3);
-
   }
 public:
-
     int param1;
     std::string param2;
     bool param3;
-
 };
 
 TEST(test_node, test_params)
 {
-
     rclcpp::init(0, nullptr);
 
     auto executor = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
@@ -146,16 +143,15 @@ TEST(test_node, test_params)
 
     std::this_thread::sleep_for(std::chrono::seconds(5));
     executor->cancel();
-    t.join(); // Wait for thread completion
-    //executor.spin_once();
-    //executor.cancel();
+    t.join();  // Wait for thread completion
+    // executor.spin_once();
+    // executor.cancel();
 
     rclcpp::shutdown();
 }
 
 TEST(test_node, test_ips_node)
 {
-
     rclcpp::init(0, nullptr);
 
     auto executor = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
@@ -185,9 +181,9 @@ TEST(test_node, test_ips_node)
 
     std::this_thread::sleep_for(std::chrono::seconds(20));
     executor->cancel();
-    t.join(); // Wait for thread completion
-    //executor.spin_once();
-    //executor.cancel();
+    t.join();  // Wait for thread completion
+    // executor.spin_once();
+    // executor.cancel();
 
     rclcpp::shutdown();
 }
@@ -203,11 +199,11 @@ TEST(test_node, test_read_yaml)
 
 TEST(test_node, test_quat)
 {
-
     ips_cam::TagPose tp;
     geometry_msgs::msg::Pose ros_pose;
     tp.x = 1.0;
     tp.y = 2.0;
+    tp.z = 0.0;
     tp.theta = 0.5;
     ips_cam::from_tag_pose(tp, ros_pose);
 
@@ -217,10 +213,10 @@ TEST(test_node, test_quat)
     std::cout << ros_pose.position.x << std::endl;
     std::cout << ros_pose.position.y << std::endl;
 
-    ASSERT_TRUE(ros_pose.position.x == tp.x);
-    ASSERT_TRUE(ros_pose.position.y == tp.y);
-    ASSERT_TRUE(ros_pose.orientation.w == std::cos(tp.theta/2.0));
-    ASSERT_TRUE(ros_pose.orientation.z == std::sin(tp.theta/2.0));
-    ASSERT_TRUE(ros_pose.orientation.x == 0);     
-    ASSERT_TRUE(ros_pose.orientation.y == 0);  
+    ASSERT_EQ(ros_pose.position.x, tp.x);
+    ASSERT_EQ(ros_pose.position.y, tp.y);
+    ASSERT_EQ(ros_pose.orientation.w, std::cos(tp.theta/2.0));
+    ASSERT_EQ(ros_pose.orientation.z, std::sin(tp.theta/2.0));
+    ASSERT_EQ(ros_pose.orientation.x, 0);
+    ASSERT_EQ(ros_pose.orientation.y, 0);
 }

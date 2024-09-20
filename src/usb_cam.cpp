@@ -90,7 +90,6 @@ void UsbCam::process_image(const char * src, char * & dest, const int & bytes_us
 
 buffered_image UsbCam::get_buffered_image()
 {
-
   buffered_image buff_image;
   buff_image.valid = false;
   unsigned int i;
@@ -98,7 +97,7 @@ buffered_image UsbCam::get_buffered_image()
 
   if (!manage_fd()) return buff_image;
 
-  //todo: init buffered_image from image_t
+  // todo: init buffered_image from image_t
   buff_image.height = m_image.height;
   buff_image.width = m_image.width;
 
@@ -142,7 +141,9 @@ buffered_image UsbCam::get_buffered_image()
       }
 
       // Get timestamp from V4L2 image buffer
-      m_image.stamp = usb_cam::utils::calc_img_timestamp(buff_image.buf.timestamp, m_epoch_time_shift_us);
+      m_image.stamp = usb_cam::utils::calc_img_timestamp(
+        buff_image.buf.timestamp,
+        m_epoch_time_shift_us);
       buff_image.stamp = m_image.stamp;
 
       assert(buff_image.buf.index < m_number_of_buffers);
@@ -166,7 +167,9 @@ buffered_image UsbCam::get_buffered_image()
       }
 
       // Get timestamp from V4L2 image buffer
-      m_image.stamp = usb_cam::utils::calc_img_timestamp(buff_image.buf.timestamp, m_epoch_time_shift_us);
+      m_image.stamp = usb_cam::utils::calc_img_timestamp(
+        buff_image.buf.timestamp,
+        m_epoch_time_shift_us);
       buff_image.stamp = m_image.stamp;
 
       for (i = 0; i < m_number_of_buffers; ++i) {
@@ -178,7 +181,7 @@ buffered_image UsbCam::get_buffered_image()
       }
 
       assert(i < m_number_of_buffers);
-      buff_image.data = (char *) buff_image.buf.m.userptr;
+      buff_image.data = reinterpret_cast<char *>(buff_image.buf.m.userptr);
       buff_image.valid = true;
       return buff_image;
     case io_method_t::IO_METHOD_UNKNOWN:
@@ -186,12 +189,10 @@ buffered_image UsbCam::get_buffered_image()
     default:
       throw std::invalid_argument("IO method unknown");
   }
-
 }
 
 void UsbCam::release_buffered_image(buffered_image buff_image)
 {
-
   switch (m_io) {
     case io_method_t::IO_METHOD_READ:
       // nothing to do
@@ -209,7 +210,6 @@ void UsbCam::release_buffered_image(buffered_image buff_image)
     case io_method_t::IO_METHOD_UNKNOWN:
       throw std::invalid_argument("IO method unknown");
   }
-
 }
 
 void UsbCam::read_frame()

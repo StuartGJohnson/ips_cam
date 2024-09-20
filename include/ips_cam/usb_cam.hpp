@@ -27,8 +27,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 
-#ifndef USB_CAM__USB_CAM_HPP_
-#define USB_CAM__USB_CAM_HPP_
+#ifndef IPS_CAM__USB_CAM_HPP_
+#define IPS_CAM__USB_CAM_HPP_
 
 extern "C" {
 #include <libavcodec/avcodec.h>
@@ -170,7 +170,7 @@ typedef struct
 // this is an image, but it is in a buffer managed by usb_cam/v4l2, and
 // must be returned so that streaming into this buffer entry may continue.
 // note the streamlining vs image_t, and the addition of the v4l2 buffer.
-typedef struct 
+typedef struct
 {
     bool valid;
     char * data;
@@ -196,7 +196,7 @@ public:
   void shutdown(void);
 
   /// @brief Take and return a buffered image. To (must) be released by the method below.
-  /// @return 
+  /// @return
   buffered_image get_buffered_image();
 
   void release_buffered_image(buffered_image buffImage);
@@ -440,4 +440,4 @@ private:
 
 }  // namespace usb_cam
 
-#endif  // USB_CAM__USB_CAM_HPP_
+#endif  // IPS_CAM__USB_CAM_HPP_
