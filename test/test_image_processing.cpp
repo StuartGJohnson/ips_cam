@@ -73,15 +73,19 @@ void functionThatThrows()
 
 ips_cam::IndoorCoordSystem SetupICS(int origin = 2)
 {
-  cv::Mat cbPatternImage = cv::imread("../../../im_ref2.png", cv::IMREAD_COLOR);
+  std::string cbPIpath = ips_cam::expand_and_check("$PKG/test/data/ips_config/im_ref2.png");
+  cv::Mat cbPatternImage = cv::imread(cbPIpath, cv::IMREAD_COLOR);
   cv::Mat cbOriginImage;
   if (origin == 1) {
-    cbOriginImage = cv::imread("../../../im_ref2_aruco1.png", cv::IMREAD_COLOR);
+    std::string cbOPath = ips_cam::expand_and_check("$PKG/test/data/ips_config/im_ref2_aruco1.png");
+    cbOriginImage = cv::imread(cbOPath, cv::IMREAD_COLOR);
   } else {
-    cbOriginImage = cv::imread("../../../im_ref2_aruco2.png", cv::IMREAD_COLOR);
+    std::string cbOPath = ips_cam::expand_and_check("$PKG/test/data/ips_config/im_ref2_aruco2.png");
+    cbOriginImage = cv::imread(cbOPath, cv::IMREAD_COLOR);
   }
+  std::string cIPath = ips_cam::expand_and_check("$PKG/test/data/ips_config/camera_intrinsics.yml");
   ips_cam::CameraIntrinsics camIntrinsics =
-    ips_cam::load_camera_intrinsics("../../../camera_intrinsics.yml");
+    ips_cam::load_camera_intrinsics(cIPath);
 
   std::map<int, double> originTag;
   originTag[1] = 0.0;
@@ -96,12 +100,19 @@ ips_cam::IndoorCoordSystem SetupICS(int origin = 2)
 
 TEST(test_image_processing, test_ics_config)
 {
-  auto aruco1 = cv::imread("../../../im_ref2_aruco1.png", cv::IMREAD_COLOR);
-  auto aruco2 = cv::imread("../../../im_ref2_aruco2.png", cv::IMREAD_COLOR);
+  std::cout << getexepath() << std::endl;
+
+  std::string aruco1Path =
+    ips_cam::expand_and_check("$PKG/test/data/ips_config/im_ref2_aruco1.png");
+  std::string aruco2Path =
+    ips_cam::expand_and_check("$PKG/test/data/ips_config/im_ref2_aruco2.png");
+  auto aruco1 = cv::imread(aruco1Path, cv::IMREAD_COLOR);
+  auto aruco2 = cv::imread(aruco2Path, cv::IMREAD_COLOR);
 
   // use the configuration file to bring up the ics
+  std::string ipPath = ips_cam::expand_and_check("$PKG/test/data/ips_config/ics_params.yml");
   ips_cam::IcsParams ip =
-    ips_cam::load_ics_params("~/IndoorPositioningSystem/ips_config/ics_params.yml");
+    ips_cam::load_ics_params(ipPath);
   // TrackingParams tp =
   //    load_tracking_params("~/IndoorPositioningSystem/ips_config/tracking.yml");
 
@@ -124,8 +135,12 @@ TEST(test_image_processing, test_ics_config)
 
 TEST(test_image_processing, test_ics)
 {
-  auto aruco1 = cv::imread("../../../im_ref2_aruco1.png", cv::IMREAD_COLOR);
-  auto aruco2 = cv::imread("../../../im_ref2_aruco2.png", cv::IMREAD_COLOR);
+  std::string aruco1Path =
+    ips_cam::expand_and_check("$PKG/test/data/ips_config/im_ref2_aruco1.png");
+  std::string aruco2Path =
+    ips_cam::expand_and_check("$PKG/test/data/ips_config/im_ref2_aruco2.png");
+  auto aruco1 = cv::imread(aruco1Path, cv::IMREAD_COLOR);
+  auto aruco2 = cv::imread(aruco2Path, cv::IMREAD_COLOR);
 
   ips_cam::IndoorCoordSystem ics1 = SetupICS(1);
 

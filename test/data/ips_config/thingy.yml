@@ -1,0 +1,7 @@
+%YAML:1.0
+---
+thing1: [1,42,3]
+thing2: [5.1,6.2,7.3]
+thing3: last_tango_in_paris.yml
+
+

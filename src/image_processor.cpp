@@ -39,18 +39,25 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/aruco.hpp>
 #include <ips_cam/image_processor.hpp>
+#include <ament_index_cpp/get_package_share_directory.hpp>
 
 namespace ips_cam
 {
 
 // Function to expand tilde to home directory
-std::string expand_tilde(const std::string & path)
+std::string expand_special(const std::string & path)
 {
   if (!path.empty() && path[0] == '~') {
     const char * home = std::getenv("HOME");     // Get the HOME environment variable
     if (home) {
       return std::string(home) + path.substr(1);        // Replace ~ with the value of $HOME
     }
+  }
+  auto tmp = path.substr(0, 4);
+  if (!path.empty() && path.substr(0, 4) == "$PKG") {
+    std::string package_share_directory =
+      ament_index_cpp::get_package_share_directory("ips_cam");
+    return package_share_directory + path.substr(4);
   }
   return path;    // Return the path unchanged if no tilde
 }
@@ -70,7 +77,7 @@ void check_file_existence(std::string filename)
 
 std::string expand_and_check(std::string filename1)
 {
-  std::string filename = expand_tilde(filename1);
+  std::string filename = expand_special(filename1);
   check_file_existence(filename);
   return filename;
 }

@@ -29,6 +29,7 @@ else()
   find_package(tf2 REQUIRED)
   find_package(tf2_geometry_msgs REQUIRED)
   find_package(yaml-cpp REQUIRED)
+  find_package(ament_index_cpp REQUIRED)
   ament_auto_find_build_dependencies()
 endif()
 
@@ -67,7 +68,8 @@ target_link_libraries(${PROJECT_NAME}
   ${avcodec_LIBRARIES}
   ${avutil_LIBRARIES}
   ${swscale_LIBRARIES}
-  ${OpenCV_LIBRARIES})
+  ${OpenCV_LIBRARIES}
+  ament_index_cpp::ament_index_cpp)
 
 # Remove once ROS 1 Noetic is deprecated
 if($ENV{ROS_VERSION} EQUAL 1)
@@ -143,7 +145,8 @@ if(BUILD_TESTING)
     #  test/test_usb_cam_lib.cpp)
     #target_link_libraries(test_usb_cam_lib
     #   ${PROJECT_NAME})
-
+    ament_add_gtest(test_infra test/test_infra.cpp)
+    target_link_libraries(test_infra ${PROJECT_NAME} ${OpenCV_LIBRARIES} ament_index_cpp::ament_index_cpp)
     ament_add_gtest(test_image_processing test/test_image_processing.cpp)
     target_link_libraries(test_image_processing ${PROJECT_NAME} ${OpenCV_LIBRARIES})
     ament_add_gtest(test_node test/test_node.cpp)
@@ -173,6 +176,9 @@ else()
   install(
     PROGRAMS scripts/show_image.py
     DESTINATION lib/${PROJECT_NAME})
+
+  install(DIRECTORY test/data/
+    DESTINATION share/${PROJECT_NAME}/test/data)
 
   install(TARGETS
     ${PROJECT_NAME}

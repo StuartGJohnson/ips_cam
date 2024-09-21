@@ -149,7 +149,7 @@ TEST(test_node, test_params)
   std::cout << getexepath() << std::endl;
 
   // Load parameters from the YAML file
-  std::string yaml_file = "../../src/ips_cam/config/test_params.yaml";
+  std::string yaml_file = ips_cam::expand_and_check("$PKG/test/data/test_params.yaml");
   std::vector<rclcpp::Parameter> parameters = load_parameters_from_yaml(yaml_file, "/**");
 
   std::cout << parameters.size() << std::endl;
@@ -190,7 +190,7 @@ TEST(test_node, test_ips_node)
   std::cout << getexepath() << std::endl;
 
   // Load parameters from the YAML file
-  std::string yaml_file1 = "~/IndoorPositioningSystem/ips_config/node_params.yaml";
+  std::string yaml_file1 = "$PKG/test/data/ips_config/node_params.yaml";
   std::string yaml_file = ips_cam::expand_and_check(yaml_file1);
   std::vector<rclcpp::Parameter> parameters = load_parameters_from_yaml(yaml_file, "/**");
 
@@ -210,7 +210,7 @@ TEST(test_node, test_ips_node)
     }
   );
 
-  std::this_thread::sleep_for(std::chrono::seconds(20));
+  std::this_thread::sleep_for(std::chrono::seconds(5));
   executor->cancel();
   t.join();    // Wait for thread completion
   // executor.spin_once();
@@ -222,7 +222,7 @@ TEST(test_node, test_ips_node)
 TEST(test_node, test_read_yaml)
 {
   // Load parameters from the YAML file
-  std::string yaml_file1 = "~/IndoorPositioningSystem/ips_config/node_params.yaml";
+  std::string yaml_file1 = "$PKG/test/data/ips_config/node_params.yaml";
   std::string yaml_file = ips_cam::expand_and_check(yaml_file1);
   std::vector<rclcpp::Parameter> parameters = load_parameters_from_yaml(yaml_file, "/**");
   std::cout << parameters.size() << std::endl;
