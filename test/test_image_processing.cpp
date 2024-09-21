@@ -26,7 +26,6 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-
 #include <limits.h>
 #include <unistd.h>
 #include <gtest/gtest.h>
@@ -169,6 +168,12 @@ TEST(test_image_processing, test_ics)
 
 TEST(test_image_processing, test_find_pattern)
 {
+  // change to true for plots
+  bool doPlots = false;
+
+  std::string cIPath = ips_cam::expand_and_check("$PKG/test/data/ips_config/camera_intrinsics.yml");
+  std::string refPath = ips_cam::expand_and_check("$PKG/test/data/ips_config/im_ref2.png");
+
   cv::Size pattern_size(6, 4);    // Chessboard pattern size
   // world coord choice 1
   std::vector<cv::Point3d> object_points_1;
@@ -186,10 +191,12 @@ TEST(test_image_processing, test_find_pattern)
 
   std::cout << get_current_dir_name() << std::endl;
 
-  frame = cv::imread("../../../im_ref2.png", cv::IMREAD_COLOR);
+  frame = cv::imread(refPath, cv::IMREAD_COLOR);
 
-  cv::imshow("hi", frame);
-  cv::waitKey(1000);
+  if (doPlots) {
+    cv::imshow("hi", frame);
+    cv::waitKey(1000);
+  }
 
   cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
 
@@ -200,8 +207,10 @@ TEST(test_image_processing, test_find_pattern)
   cv::Mat outputImage_1 = frame.clone();
   cv::Mat outputImage_2 = frame.clone();
 
-  cv::imshow("mono", gray);
-  cv::waitKey(1000);
+  if (doPlots) {
+    cv::imshow("mono", gray);
+    cv::waitKey(1000);
+  }
 
   std::vector<cv::Point2f> corners;
   bool found = cv::findChessboardCorners(gray, pattern_size, corners);
@@ -222,13 +231,15 @@ TEST(test_image_processing, test_find_pattern)
 
   cv::Mat(corners).convertTo(image_points, cv::Mat(image_points).type());
 
-  cv::imshow("points", outputImage_0);
-  cv::waitKey(1000);
+  if (doPlots) {
+    cv::imshow("points", outputImage_0);
+    cv::waitKey(1000);
+  }
 
   // now obtain the camera extrinsics for this image
   // we will need some intrinsics...
   ips_cam::CameraIntrinsics camIntrinsics =
-    ips_cam::load_camera_intrinsics("../../../camera_intrinsics.yml");
+    ips_cam::load_camera_intrinsics(cIPath);
 
   // std::vector<cv::Vec3d> rvec, tvec;
 
@@ -264,8 +275,10 @@ TEST(test_image_processing, test_find_pattern)
   // std::cout << rvec << std::endl;
   // std::cout << tvec << std::endl;
 
-  cv::imshow("pattern axes 1", outputImage_1);
-  cv::waitKey(5000);
+  if (doPlots) {
+    cv::imshow("pattern axes 1", outputImage_1);
+    cv::waitKey(1000);
+  }
 
   cv::solvePnP(
     object_points_2,
@@ -282,8 +295,10 @@ TEST(test_image_processing, test_find_pattern)
   std::cout << rvec << std::endl;
   std::cout << tvec << std::endl;
 
-  cv::imshow("pattern axes 2", outputImage_2);
-  cv::waitKey(5000);
+  if (doPlots) {
+    cv::imshow("pattern axes 2", outputImage_2);
+    cv::waitKey(1000);
+  }
 
   // cv::Mat rmat;
   // cv::Rodrigues(rvec, rmat);
@@ -343,8 +358,10 @@ TEST(test_image_processing, test_find_pattern)
 
   cv::fillPoly(outputImage_2, camPolyInt.t(), cv::Scalar(0, 0, 255));
 
-  cv::imshow("red box", outputImage_2);
-  cv::waitKey(5000);
+  if (doPlots) {
+    cv::imshow("red box", outputImage_2);
+    cv::waitKey(1000);
+  }
 
   // cv::fillPoly(frame, camPolyInt.t(), cv::Scalar(0, 0, 255));
   // cv::imwrite("../../../im_ref_tagged.png", frame);
@@ -409,10 +426,14 @@ TEST(test_image_processing, test_matrix_tools)
 
 TEST(test_image_processing, test_drawing)
 {
+  bool doPlots = false;
+
   cv::Mat frame = cv::imread("../../../im_ref.png", cv::IMREAD_COLOR);
 
-  cv::imshow("raw frame", frame);
-  cv::waitKey(2000);
+  if (doPlots) {
+    cv::imshow("raw frame", frame);
+    cv::waitKey(1000);
+  }
 
   int32_t data[8] = {500, 500, 550, 550, 500, 550, 550, 500};
 
@@ -421,8 +442,10 @@ TEST(test_image_processing, test_drawing)
 
   cv::fillPoly(frame, rvec.t(), cv::Scalar(0, 0, 255));
 
-  cv::imshow("red box", frame);
-  cv::waitKey(10000);
+  if (doPlots) {
+    cv::imshow("red box", frame);
+    cv::waitKey(1000);
+  }
 }
 
 TEST(test_image_processing, test_stuff)
@@ -442,9 +465,9 @@ TEST(test_image_processing, test_bench_aruco)
 
   std::cout << get_current_dir_name() << std::endl;
 
-  // frame = cv::imread("../../../im_aruco.png", cv::IMREAD_COLOR);
-  // frame = cv::imread("../../../im_ref2_aruco1.png", cv::IMREAD_COLOR);
-  frame = cv::imread("../../../im_ref2.png", cv::IMREAD_COLOR);
+  std::string refPath = ips_cam::expand_and_check("$PKG/test/data/ips_config/im_ref2.png");
+
+  frame = cv::imread(refPath, cv::IMREAD_COLOR);
 
   ips_cam::IndoorCoordSystem ics = SetupICS();
 
@@ -478,16 +501,18 @@ TEST(test_image_processing, test_bench_aruco)
 
 TEST(test_image_processing, test_find_aruco)
 {
+  bool doPlots = false;
+
   cv::Mat frame;
 
-  std::cout << get_current_dir_name() << std::endl;
+  std::string aruco1Path =
+    ips_cam::expand_and_check("$PKG/test/data/ips_config/im_ref2_aruco1.png");
+  frame = cv::imread(aruco1Path, cv::IMREAD_COLOR);
 
-  // frame = cv::imread("../../../im_aruco.png", cv::IMREAD_COLOR);
-  frame = cv::imread("../../../im_ref2_aruco1.png", cv::IMREAD_COLOR);
-  // frame = cv::imread("../../../im_ref2.png", cv::IMREAD_COLOR);
-
-  cv::imshow("hi", frame);
-  cv::waitKey(2000);
+  if (doPlots) {
+    cv::imshow("hi", frame);
+    cv::waitKey(2000);
+  }
 
   ips_cam::IndoorCoordSystem ics = SetupICS();
 
@@ -503,8 +528,10 @@ TEST(test_image_processing, test_find_aruco)
   cv::Mat outputImage = frame.clone();
   cv::aruco::drawDetectedMarkers(outputImage, foundTags.markerCorners, foundTags.markerIds);
 
-  cv::imshow("markers", outputImage);
-  cv::waitKey(2000);
+  if (doPlots) {
+    cv::imshow("markers", outputImage);
+    cv::waitKey(2000);
+  }
 
   // draw axis for each marker
   std::vector<cv::Vec3d> rvecs, tvecs;
@@ -521,8 +548,10 @@ TEST(test_image_processing, test_find_aruco)
   }
 
 
-  cv::imshow("marker poses", outputImage);
-  cv::waitKey(1000);
+  if (doPlots) {
+    cv::imshow("marker poses", outputImage);
+    cv::waitKey(1000);
+  }
   std::vector<cv::Mat> worldCorners;
   tagFinder.ImageToWorld(foundTags, worldCorners);
   std::vector<ips_cam::TagPose> poses = tagFinder.FindMarkerPoses(foundTags, worldCorners);
@@ -626,8 +655,9 @@ TEST(test_image_processing, test_rigid_xform)
 TEST(test_image_processing, test_yaml_read)
 {
   // load calibration data
+  std::string cIPath = ips_cam::expand_and_check("$PKG/test/data/ips_config/camera_intrinsics.yml");
   ips_cam::CameraIntrinsics camIntrinsics =
-    ips_cam::load_camera_intrinsics("../../../camera_intrinsics.yml");
+    ips_cam::load_camera_intrinsics(cIPath);
   std::cout << camIntrinsics.camera_matrix << std::endl;
   std::cout << camIntrinsics.dist_coeffs << std::endl;
   ASSERT_EQ(camIntrinsics.camera_matrix.dims, 2);
@@ -643,16 +673,19 @@ TEST(test_image_processing, test_yaml_read)
 
 TEST(test_image_processing, test_yaml_read2)
 {
+  std::string ipPath = ips_cam::expand_and_check("$PKG/test/data/ips_config/ics_params.yml");
+  std::string tpPath = ips_cam::expand_and_check("$PKG/test/data/ips_config/tracking.yml");
   ips_cam::IcsParams ip =
-    ips_cam::load_ics_params("~/IndoorPositioningSystem/ips_config/ics_params.yml");
+    ips_cam::load_ics_params(ipPath);
   ips_cam::TrackingParams tp =
-    ips_cam::load_tracking_params("~/IndoorPositioningSystem/ips_config/tracking.yml");
+    ips_cam::load_tracking_params(tpPath);
 }
 
 TEST(test_image_processing, test_yaml_read_exp)
 {
   // load calibration data
-  ips_cam::load_thingy("../../../thingy.yml");
+  std::string tPath = ips_cam::expand_and_check("$PKG/test/data/ips_config/thingy.yml");
+  ips_cam::load_thingy(tPath);
 }
 
 TEST(ExceptionTest, ThrowsRuntimeError)
