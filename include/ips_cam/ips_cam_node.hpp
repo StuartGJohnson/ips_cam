@@ -53,20 +53,21 @@
 namespace ips_cam
 {
 
-template <typename T>
-int findIndex(const std::vector<T>& vec, const T& value) {
-    auto it = std::find(vec.begin(), vec.end(), value);
-    if (it != vec.end()) {
-        return std::distance(vec.begin(), it);
-    } else {
-        return -1;  // Return -1 if not found
-    }
+template<typename T>
+int findIndex(const std::vector<T> & vec, const T & value)
+{
+  auto it = std::find(vec.begin(), vec.end(), value);
+  if (it != vec.end()) {
+    return std::distance(vec.begin(), it);
+  } else {
+    return -1;      // Return -1 if not found
+  }
 }
 
 /// @brief generate pose for ROS from image processing tools
 /// @param tagPose
 /// @param ros_pose
-void from_tag_pose(TagPose& tagPose, geometry_msgs::msg::Pose& ros_pose)
+void from_tag_pose(TagPose & tagPose, geometry_msgs::msg::Pose & ros_pose)
 {
   ros_pose.position.x = tagPose.x;
   ros_pose.position.y = tagPose.y;
@@ -102,7 +103,7 @@ public:
   bool load_tracking_yaml();
 
   // the internal ... camera
-  usb_cam::UsbCam* m_camera;
+  usb_cam::UsbCam * m_camera;
 
 
   // the dictionary of pose publishers - one for each object to be tracked
@@ -124,7 +125,7 @@ public:
   std::unique_ptr<ObjectTracker> tagFinder;
 
   cv::Mat detection_image;
- };
+};
 
 }  // namespace ips_cam
 #endif  // IPS_CAM__IPS_CAM_NODE_HPP_

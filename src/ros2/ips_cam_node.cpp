@@ -8,16 +8,16 @@
 namespace ips_cam
 {
 
-IpsCamNode::IpsCamNode(const rclcpp::NodeOptions &node_options)
-    : Node("ips_cam", node_options),
-      m_camera(new usb_cam::UsbCam()),
-      m_parameters(),
-      ics(),
-      tagFinder(nullptr)
+IpsCamNode::IpsCamNode(const rclcpp::NodeOptions & node_options)
+: Node("ips_cam", node_options),
+  m_camera(new usb_cam::UsbCam()),
+  m_parameters(),
+  ics(),
+  tagFinder(nullptr)
 {
-    declare_params();
-    get_params();
-    init();
+  declare_params();
+  get_params();
+  init();
 }
 
 IpsCamNode::~IpsCamNode()
@@ -31,30 +31,30 @@ IpsCamNode::~IpsCamNode()
 
 void IpsCamNode::declare_params()
 {
-    // declare params
-    this->declare_parameter("camera_name", "default_cam");
-    this->declare_parameter("camera_info_url", "");
-    this->declare_parameter("framerate", 30.0);
-    this->declare_parameter("frame_id", "default_cam");
-    this->declare_parameter("image_height", 480);
-    this->declare_parameter("image_width", 640);
-    this->declare_parameter("io_method", "mmap");
-    this->declare_parameter("pixel_format", "yuyv");
-    this->declare_parameter("av_device_format", "YUV422P");
-    this->declare_parameter("video_device", "/dev/video0");
-    this->declare_parameter("brightness", 50);  // 0-255, -1 "leave alone"
-    this->declare_parameter("contrast", -1);    // 0-255, -1 "leave alone"
-    this->declare_parameter("saturation", -1);  // 0-255, -1 "leave alone"
-    this->declare_parameter("sharpness", -1);   // 0-255, -1 "leave alone"
-    this->declare_parameter("gain", -1);        // 0-100?, -1 "leave alone"
-    this->declare_parameter("auto_white_balance", true);
-    this->declare_parameter("white_balance", 4000);
-    this->declare_parameter("autoexposure", true);
-    this->declare_parameter("exposure", 100);
-    this->declare_parameter("autofocus", false);
-    this->declare_parameter("focus", -1);  // 0-255, -1 "leave alone"
-    this->declare_parameter("ics_params_file", "");  // setup file
-    this->declare_parameter("tracking_params_file", "");  // setup file
+  // declare params
+  this->declare_parameter("camera_name", "default_cam");
+  this->declare_parameter("camera_info_url", "");
+  this->declare_parameter("framerate", 30.0);
+  this->declare_parameter("frame_id", "default_cam");
+  this->declare_parameter("image_height", 480);
+  this->declare_parameter("image_width", 640);
+  this->declare_parameter("io_method", "mmap");
+  this->declare_parameter("pixel_format", "yuyv");
+  this->declare_parameter("av_device_format", "YUV422P");
+  this->declare_parameter("video_device", "/dev/video0");
+  this->declare_parameter("brightness", 50);    // 0-255, -1 "leave alone"
+  this->declare_parameter("contrast", -1);      // 0-255, -1 "leave alone"
+  this->declare_parameter("saturation", -1);    // 0-255, -1 "leave alone"
+  this->declare_parameter("sharpness", -1);     // 0-255, -1 "leave alone"
+  this->declare_parameter("gain", -1);          // 0-100?, -1 "leave alone"
+  this->declare_parameter("auto_white_balance", true);
+  this->declare_parameter("white_balance", 4000);
+  this->declare_parameter("autoexposure", true);
+  this->declare_parameter("exposure", 100);
+  this->declare_parameter("autofocus", false);
+  this->declare_parameter("focus", -1);    // 0-255, -1 "leave alone"
+  this->declare_parameter("ics_params_file", "");    // setup file
+  this->declare_parameter("tracking_params_file", "");    // setup file
 }
 
 void IpsCamNode::get_params()
@@ -128,7 +128,7 @@ void IpsCamNode::assign_params(const std::vector<rclcpp::Parameter> & parameters
       m_parameters.autofocus = parameter.as_bool();
     } else if (parameter.get_name() == "focus") {
       m_parameters.focus = parameter.as_int();
-    // non-camera params
+      // non-camera params
     } else if (parameter.get_name() == "ics_params_file") {
       ics_params_path = parameter.value_to_string();
     } else if (parameter.get_name() == "tracking_params_file") {
@@ -209,102 +209,93 @@ void IpsCamNode::set_v4l2_params()
 
 void IpsCamNode::init()
 {
-    if (!check_device())
-    {
-        rclcpp::shutdown();
-        return;
-    }
+  if (!check_device()) {
+    rclcpp::shutdown();
+    return;
+  }
 
-    // image processing configs. note that these will
-    // throw if they can't find things (like files).
-    try
-    {
-        icsParams = load_ics_params(ics_params_path);
-        trackingParams = load_tracking_params(tracking_params_path);
-    }
-    catch(const std::exception& e)
-    {
-        RCLCPP_ERROR_ONCE(
-            this->get_logger(),
-            "Error in tracking setup '%s'", e.what());
-        rclcpp::shutdown();
-        return;
-    }
+  // image processing configs. note that these will
+  // throw if they can't find things (like files).
+  try {
+    icsParams = load_ics_params(ics_params_path);
+    trackingParams = load_tracking_params(tracking_params_path);
+  } catch (const std::exception & e) {
+    RCLCPP_ERROR_ONCE(
+      this->get_logger(),
+      "Error in tracking setup '%s'", e.what());
+    rclcpp::shutdown();
+    return;
+  }
 
-    if (trackingParams.tag.size() == 0)
-    {
-        RCLCPP_ERROR_ONCE(
-            this->get_logger(),
-            "Exiting on config: No tags to track!");
-        rclcpp::shutdown();
-        return;
-    }
+  if (trackingParams.tag.size() == 0) {
+    RCLCPP_ERROR_ONCE(
+      this->get_logger(),
+      "Exiting on config: No tags to track!");
+    rclcpp::shutdown();
+    return;
+  }
 
-    // setup image processing from configs
-    ics = EstablishIndoorCoordinateSystem(icsParams);
+  // setup image processing from configs
+  ics = EstablishIndoorCoordinateSystem(icsParams);
 
-    tagFinder = std::make_unique<ObjectTracker>(ics, trackingParams.tag_lookup);
+  tagFinder = std::make_unique<ObjectTracker>(ics, trackingParams.tag_lookup);
 
-    // set the IO method
-    usb_cam::io_method_t io_method =
-        usb_cam::utils::io_method_from_string(m_parameters.io_method_name);
-    if (io_method == usb_cam::utils::IO_METHOD_UNKNOWN)
-    {
-        RCLCPP_ERROR_ONCE(
-            this->get_logger(),
-            "Unknown IO method '%s'", m_parameters.io_method_name.c_str());
-        rclcpp::shutdown();
-        return;
-    }
+  // set the IO method
+  usb_cam::io_method_t io_method =
+    usb_cam::utils::io_method_from_string(m_parameters.io_method_name);
+  if (io_method == usb_cam::utils::IO_METHOD_UNKNOWN) {
+    RCLCPP_ERROR_ONCE(
+      this->get_logger(),
+      "Unknown IO method '%s'", m_parameters.io_method_name.c_str());
+    rclcpp::shutdown();
+    return;
+  }
 
-    // configure the camera
-    m_camera->configure(m_parameters, io_method);
+  // configure the camera
+  m_camera->configure(m_parameters, io_method);
 
-    set_v4l2_params();
+  set_v4l2_params();
 
-    // start the camera
-    m_camera->start();
+  // start the camera
+  m_camera->start();
 
-    // iterate through our targets and assign publishers. This is
-    // from a nice suggestion by chatgpt 4o
+  // iterate through our targets and assign publishers. This is
+  // from a nice suggestion by chatgpt 4o
 
-    for (int target : trackingParams.tag)
-    {
-        std::string topic_name = "object_" + std::to_string(target);
-        auto publisher =
-            this->create_publisher<geometry_msgs::msg::PoseStamped>(topic_name, rclcpp::QoS(100));
-        publishers_map.emplace(target, publisher);
-    }
+  for (int target : trackingParams.tag) {
+    std::string topic_name = "object_" + std::to_string(target);
+    auto publisher =
+      this->create_publisher<geometry_msgs::msg::PoseStamped>(topic_name, rclcpp::QoS(100));
+    publishers_map.emplace(target, publisher);
+  }
 
-    detection_image = cv::Mat(m_parameters.image_height, m_parameters.image_width,  CV_8UC1);
+  detection_image = cv::Mat(m_parameters.image_height, m_parameters.image_width, CV_8UC1);
 
-    const int period_ms = 1000.0 / m_parameters.framerate;
-    m_timer = this->create_wall_timer(
-        std::chrono::milliseconds(static_cast<int64_t>(period_ms)),
-        std::bind(&IpsCamNode::update, this));
-    RCLCPP_INFO_STREAM(this->get_logger(), "Timer triggering every " << period_ms << " ms");
+  const int period_ms = 1000.0 / m_parameters.framerate;
+  m_timer = this->create_wall_timer(
+    std::chrono::milliseconds(static_cast<int64_t>(period_ms)),
+    std::bind(&IpsCamNode::update, this));
+  RCLCPP_INFO_STREAM(this->get_logger(), "Timer triggering every " << period_ms << " ms");
 }
 
 bool IpsCamNode::check_device()
 {
-    // Check if given device name is an available v4l2 device
-    auto available_devices = usb_cam::utils::available_devices();
-    if (available_devices.find(m_parameters.device_name) == available_devices.end())
-    {
-        RCLCPP_ERROR_STREAM(
-            this->get_logger(),
-            "Device specified is not available or is not a valid V4L2 device: `"
-            << m_parameters.device_name << "`");
-        RCLCPP_INFO(this->get_logger(), "Available V4L2 devices are:");
-        for (const auto &device : available_devices)
-        {
-            RCLCPP_INFO_STREAM(this->get_logger(), "    " << device.first);
-            RCLCPP_INFO_STREAM(this->get_logger(), "        " << device.second.card);
-        }
-        // rclcpp::shutdown();
-        return false;
+  // Check if given device name is an available v4l2 device
+  auto available_devices = usb_cam::utils::available_devices();
+  if (available_devices.find(m_parameters.device_name) == available_devices.end()) {
+    RCLCPP_ERROR_STREAM(
+      this->get_logger(),
+      "Device specified is not available or is not a valid V4L2 device: `"
+        << m_parameters.device_name << "`");
+    RCLCPP_INFO(this->get_logger(), "Available V4L2 devices are:");
+    for (const auto & device : available_devices) {
+      RCLCPP_INFO_STREAM(this->get_logger(), "    " << device.first);
+      RCLCPP_INFO_STREAM(this->get_logger(), "        " << device.second.card);
     }
-    return true;
+    // rclcpp::shutdown();
+    return false;
+  }
+  return true;
 }
 
 void IpsCamNode::update()
@@ -323,47 +314,44 @@ void IpsCamNode::update()
 
 bool IpsCamNode::take_and_process_image()
 {
-    usb_cam::buffered_image buff_im = m_camera->get_buffered_image();
+  usb_cam::buffered_image buff_im = m_camera->get_buffered_image();
 
-    if (buff_im.valid)
-    {
-        // grab timestamp
-        struct timespec timestamp = buff_im.stamp;
+  if (buff_im.valid) {
+    // grab timestamp
+    struct timespec timestamp = buff_im.stamp;
 
-        // process the frame
-        // form an image suitable for opencv reduction computations.
-        cv::Mat src_image(buff_im.height, buff_im.width, CV_8UC2, buff_im.data);
-        cv::cvtColor(src_image, detection_image, cv::COLOR_YUV2GRAY_YUYV);
+    // process the frame
+    // form an image suitable for opencv reduction computations.
+    cv::Mat src_image(buff_im.height, buff_im.width, CV_8UC2, buff_im.data);
+    cv::cvtColor(src_image, detection_image, cv::COLOR_YUV2GRAY_YUYV);
 
-        // done with the buffer - return to v4l2
-        m_camera->release_buffered_image(buff_im);
+    // done with the buffer - return to v4l2
+    m_camera->release_buffered_image(buff_im);
 
-        // process this monochrome image into tag locations
-        std::vector<TagPose> tagPoses = tagFinder->Track(detection_image);
+    // process this monochrome image into tag locations
+    std::vector<TagPose> tagPoses = tagFinder->Track(detection_image);
 
-        //  convert and publish tag poses
-        for (TagPose tagPose : tagPoses)
-        {
-            geometry_msgs::msg::PoseStamped rosPose;
-            from_tag_pose(tagPose, rosPose.pose);
-            rosPose.header.stamp.sec = timestamp.tv_sec;
-            rosPose.header.stamp.nanosec = timestamp.tv_nsec;
+    //  convert and publish tag poses
+    for (TagPose tagPose : tagPoses) {
+      geometry_msgs::msg::PoseStamped rosPose;
+      from_tag_pose(tagPose, rosPose.pose);
+      rosPose.header.stamp.sec = timestamp.tv_sec;
+      rosPose.header.stamp.nanosec = timestamp.tv_nsec;
 
-            // note that for visualization in rviz2, a static transform is handy
-            // e.g., ros2 run tf2_ros static_transform_publisher 0 0 0 0 0 0 world map
-            rosPose.header.frame_id = "/world";
+      // note that for visualization in rviz2, a static transform is handy
+      // e.g., ros2 run tf2_ros static_transform_publisher 0 0 0 0 0 0 world map
+      rosPose.header.frame_id = "/world";
 
-            // find the publisher to dispatch this with
-            auto it = publishers_map.find(tagPose.tag);
-            if (it != publishers_map.end())
-            {
-                it->second->publish(rosPose);
-            }
-        }
-        return true;
-    } else {
-        return false;
+      // find the publisher to dispatch this with
+      auto it = publishers_map.find(tagPose.tag);
+      if (it != publishers_map.end()) {
+        it->second->publish(rosPose);
+      }
     }
+    return true;
+  } else {
+    return false;
+  }
 }
 
 }  // namespace ips_cam

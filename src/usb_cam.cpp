@@ -95,7 +95,7 @@ buffered_image UsbCam::get_buffered_image()
   unsigned int i;
   int len;
 
-  if (!manage_fd()) return buff_image;
+  if (!manage_fd()) {return buff_image;}
 
   // todo: init buffered_image from image_t
   buff_image.height = m_image.height;
@@ -200,9 +200,8 @@ void UsbCam::release_buffered_image(buffered_image buff_image)
     case io_method_t::IO_METHOD_MMAP:
     case io_method_t::IO_METHOD_USERPTR:
       /// Requeue buffer so it can be reused
-      if (buff_image.valid){
-        if (-1 == usb_cam::utils::xioctl(m_fd, static_cast<int>(VIDIOC_QBUF), &(buff_image.buf)))
-        {
+      if (buff_image.valid) {
+        if (-1 == usb_cam::utils::xioctl(m_fd, static_cast<int>(VIDIOC_QBUF), &(buff_image.buf))) {
           throw std::runtime_error("Unable to exchange buffer with the driver");
         }
       }
@@ -772,7 +771,7 @@ bool UsbCam::manage_fd()
 
 void UsbCam::grab_image()
 {
-  if (manage_fd()) read_frame();
+  if (manage_fd()) {read_frame();}
 }
 
 // enables/disables auto focus

@@ -172,12 +172,12 @@ typedef struct
 // note the streamlining vs image_t, and the addition of the v4l2 buffer.
 typedef struct
 {
-    bool valid;
-    char * data;
-    size_t width;
-    size_t height;
-    struct timespec stamp;
-    struct v4l2_buffer buf;
+  bool valid;
+  char * data;
+  size_t width;
+  size_t height;
+  struct timespec stamp;
+  struct v4l2_buffer buf;
 } buffered_image;
 
 class UsbCam
@@ -213,7 +213,7 @@ public:
   /// in an image pointer to fill in
   void get_image(char * destination);
 
-  void get_image(char * destination, double& illuminance);
+  void get_image(char * destination, double & illuminance);
 
   std::vector<capture_format_t> get_supported_formats();
 
