@@ -1,3 +1,5 @@
+// Copyright 2021 Evan Flynn
+// Copyright 2014 Robert Bosch, LLC
 // Copyright 2024 Stuart Johnson
 //
 // Redistribution and use in source and binary forms, with or without
