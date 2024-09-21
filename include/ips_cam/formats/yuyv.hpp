@@ -27,8 +27,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 
-#ifndef USB_CAM__FORMATS__YUYV_HPP_
-#define USB_CAM__FORMATS__YUYV_HPP_
+#ifndef IPS_CAM__FORMATS__YUYV_HPP_
+#define IPS_CAM__FORMATS__YUYV_HPP_
 
 #include "linux/videodev2.h"
 
@@ -112,4 +112,4 @@ private:
 }  // namespace formats
 }  // namespace usb_cam
 
-#endif  // USB_CAM__FORMATS__YUYV_HPP_
+#endif  // IPS_CAM__FORMATS__YUYV_HPP_

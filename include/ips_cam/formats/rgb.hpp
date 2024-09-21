@@ -27,8 +27,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 
-#ifndef USB_CAM__FORMATS__RGB_HPP_
-#define USB_CAM__FORMATS__RGB_HPP_
+#ifndef IPS_CAM__FORMATS__RGB_HPP_
+#define IPS_CAM__FORMATS__RGB_HPP_
 
 #include "linux/videodev2.h"
 
@@ -60,4 +60,4 @@ public:
 }  // namespace formats
 }  // namespace usb_cam
 
-#endif  // USB_CAM__FORMATS__RGB_HPP_
+#endif  // IPS_CAM__FORMATS__RGB_HPP_

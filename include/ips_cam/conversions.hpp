@@ -28,8 +28,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 
-#ifndef USB_CAM__CONVERSIONS_HPP_
-#define USB_CAM__CONVERSIONS_HPP_
+#ifndef IPS_CAM__CONVERSIONS_HPP_
+#define IPS_CAM__CONVERSIONS_HPP_
 
 #include <string>
 
@@ -62,4 +62,4 @@ std::string FCC2S(const unsigned int & val)
 }  // namespace conversions
 }  // namespace usb_cam
 
-#endif  // USB_CAM__CONVERSIONS_HPP_
+#endif  // IPS_CAM__CONVERSIONS_HPP_

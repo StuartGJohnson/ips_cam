@@ -28,8 +28,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 
-#ifndef USB_CAM__CONSTANTS_HPP_
-#define USB_CAM__CONSTANTS_HPP_
+#ifndef IPS_CAM__CONSTANTS_HPP_
+#define IPS_CAM__CONSTANTS_HPP_
 
 #include <string>
 #include <vector>
@@ -154,4 +154,4 @@ const int clipping_table_offset = 128;
 }  // namespace constants
 }  // namespace usb_cam
 
-#endif  // USB_CAM__CONSTANTS_HPP_
+#endif  // IPS_CAM__CONSTANTS_HPP_

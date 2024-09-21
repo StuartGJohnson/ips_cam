@@ -26,8 +26,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef USB_CAM__FORMATS__AV_PIXEL_FORMAT_HELPER_HPP_
-#define USB_CAM__FORMATS__AV_PIXEL_FORMAT_HELPER_HPP_
+#ifndef IPS_CAM__FORMATS__AV_PIXEL_FORMAT_HELPER_HPP_
+#define IPS_CAM__FORMATS__AV_PIXEL_FORMAT_HELPER_HPP_
 
 #include <unordered_map>
 #include <algorithm>
@@ -1142,4 +1142,4 @@ inline uint8_t get_bit_depth_from_av_format(const std::string & avPixelFormatStr
 }  // namespace formats
 }  // namespace usb_cam
 
-#endif  // USB_CAM__FORMATS__AV_PIXEL_FORMAT_HELPER_HPP_
+#endif  // IPS_CAM__FORMATS__AV_PIXEL_FORMAT_HELPER_HPP_

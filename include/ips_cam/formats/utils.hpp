@@ -27,8 +27,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 
-#ifndef USB_CAM__FORMATS__UTILS_HPP_
-#define USB_CAM__FORMATS__UTILS_HPP_
+#ifndef IPS_CAM__FORMATS__UTILS_HPP_
+#define IPS_CAM__FORMATS__UTILS_HPP_
 
 #include "ips_cam/utils.hpp"
 
@@ -105,4 +105,4 @@ inline void YUV2RGB(
 }  // namespace formats
 }  // namespace usb_cam
 
-#endif  // USB_CAM__FORMATS__UTILS_HPP_
+#endif  // IPS_CAM__FORMATS__UTILS_HPP_

@@ -27,8 +27,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 
-#ifndef USB_CAM__FORMATS__MJPEG_HPP_
-#define USB_CAM__FORMATS__MJPEG_HPP_
+#ifndef IPS_CAM__FORMATS__MJPEG_HPP_
+#define IPS_CAM__FORMATS__MJPEG_HPP_
 ///
 /// @file Most of this code follows the example provided by ffmpeg:
 ///
@@ -253,4 +253,4 @@ private:
 }  // namespace formats
 }  // namespace usb_cam
 
-#endif  // USB_CAM__FORMATS__MJPEG_HPP_
+#endif  // IPS_CAM__FORMATS__MJPEG_HPP_
