@@ -101,6 +101,7 @@ jobs:
         with:
           package-name: ips_cam
           target-ros2-distro: ${{ matrix.ros_distro }}
+          import-token: ${{ secrets.GITHUB_TOKEN }}
           vcs-repo-file-url: ""
           colcon-defaults: |
             {
