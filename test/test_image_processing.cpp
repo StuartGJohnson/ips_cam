@@ -126,8 +126,20 @@ TEST(test_image_processing, test_ics_config)
   std::cout << "ics1:" << std::endl;
   ips_cam::ObjectTracker tagFinder1 = ips_cam::ObjectTracker(ics, tags);
   auto poses11 = tagFinder1.Track(aruco1);
+  ASSERT_EQ(poses11.size(), 1);
+  ASSERT_EQ(poses11[0].tag, 1);
+  ASSERT_NEAR(poses11[0].theta, 3.14 / 2, 0.1);
+  ASSERT_NEAR(poses11[0].x, 5 * 198.0, 50.0);
+  ASSERT_NEAR(poses11[0].y, 3 * 198.0, 50.0);
+  ASSERT_EQ(poses11[0].z, 0.0);
   std::cout << "aruco1: " << poses11[0] << std::endl;
   auto poses12 = tagFinder1.Track(aruco2);
+  ASSERT_EQ(poses12.size(), 1);
+  ASSERT_EQ(poses12[0].tag, 1);
+  ASSERT_NEAR(poses12[0].theta, -3.14 / 2, 0.1);
+  ASSERT_NEAR(poses12[0].x, 0.0, 50.0);
+  ASSERT_NEAR(poses12[0].y, 0.0, 50.0);
+  ASSERT_EQ(poses12[0].z, 0.0);
   std::cout << "aruco2: " << poses12[0] << std::endl;
 }
 
@@ -152,8 +164,20 @@ TEST(test_image_processing, test_ics)
   std::cout << "ics1:" << std::endl;
   ips_cam::ObjectTracker tagFinder1 = ips_cam::ObjectTracker(ics1, tags);
   auto poses11 = tagFinder1.Track(aruco1);
+  ASSERT_EQ(poses11.size(), 1);
+  ASSERT_EQ(poses11[0].tag, 1);
+  ASSERT_NEAR(poses11[0].theta, -3.14 / 2, 0.1);
+  ASSERT_NEAR(poses11[0].x, 0.0, 50.0);
+  ASSERT_NEAR(poses11[0].y, 0.0, 50.0);
+  ASSERT_EQ(poses11[0].z, 0.0);
   std::cout << "aruco1: " << poses11[0] << std::endl;
   auto poses12 = tagFinder1.Track(aruco2);
+  ASSERT_EQ(poses12.size(), 1);
+  ASSERT_EQ(poses12[0].tag, 1);
+  ASSERT_NEAR(poses12[0].theta, 3.14 / 2, 0.1);
+  ASSERT_NEAR(poses12[0].x, 5 * 198.0, 50.0);
+  ASSERT_NEAR(poses12[0].y, 3 * 198.0, 50.0);
+  ASSERT_EQ(poses12[0].z, 0.0);
   std::cout << "aruco2: " << poses12[0] << std::endl;
 
   ips_cam::IndoorCoordSystem ics2 = SetupICS(2);
@@ -161,8 +185,20 @@ TEST(test_image_processing, test_ics)
   std::cout << "ics2:" << std::endl;
   ips_cam::ObjectTracker tagFinder2 = ips_cam::ObjectTracker(ics2, tags);
   auto poses21 = tagFinder2.Track(aruco1);
+  ASSERT_EQ(poses21.size(), 1);
+  ASSERT_EQ(poses21[0].tag, 1);
+  ASSERT_NEAR(poses21[0].theta, 3.14 / 2, 0.1);
+  ASSERT_NEAR(poses21[0].x, 5 * 198.0, 50.0);
+  ASSERT_NEAR(poses21[0].y, 3 * 198.0, 50.0);
+  ASSERT_EQ(poses21[0].z, 0.0);
   std::cout << "aruco1: " << poses21[0] << std::endl;
   auto poses22 = tagFinder2.Track(aruco2);
+  ASSERT_EQ(poses22.size(), 1);
+  ASSERT_EQ(poses22[0].tag, 1);
+  ASSERT_NEAR(poses22[0].theta, -3.14 / 2, 0.1);
+  ASSERT_NEAR(poses22[0].x, 0.0, 50.0);
+  ASSERT_NEAR(poses22[0].y, 0.0, 50.0);
+  ASSERT_EQ(poses22[0].z, 0.0);
   std::cout << "aruco2: " << poses22[0] << std::endl;
 }
 
@@ -200,8 +236,8 @@ TEST(test_image_processing, test_find_pattern)
 
   cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
 
-  std::cout << frame.type() << std::endl;
-  std::cout << gray.type() << std::endl;
+  std::cout << "frame data type: " << frame.type() << std::endl;
+  std::cout << "gray data type: " << gray.type() << std::endl;
 
   cv::Mat outputImage_0 = frame.clone();
   cv::Mat outputImage_1 = frame.clone();
@@ -222,6 +258,8 @@ TEST(test_image_processing, test_find_pattern)
     );
     cv::drawChessboardCorners(outputImage_0, pattern_size, corners, found);
   }
+
+  ASSERT_EQ(found, true);
 
   // OK, so the chessboard finder returns coordinate systems with Z reversed, and
   // x along the the long axis of the chessboard. To fix Z, I can either
@@ -292,8 +330,8 @@ TEST(test_image_processing, test_find_pattern)
     camIntrinsics.camera_matrix,
     camIntrinsics.dist_coeffs, rvec, tvec, 2.0);
 
-  std::cout << rvec << std::endl;
-  std::cout << tvec << std::endl;
+  std::cout << "rvec: " << rvec << std::endl;
+  std::cout << "tvec: " << tvec << std::endl;
 
   if (doPlots) {
     cv::imshow("pattern axes 2", outputImage_2);
@@ -313,9 +351,8 @@ TEST(test_image_processing, test_find_pattern)
   cv::Mat extMat2 = ips_cam::composeCameraExtrinsicMatrixFull(rvec, tvec);
   cv::Mat einv;
   cv::invert(extMat2, einv);
-  std::cout << "new stuff!" << std::endl;
-  std::cout << extMat2 << std::endl;
-  std::cout << einv << std::endl;
+  std::cout << "extMat2: " << extMat2 << std::endl;
+  std::cout << "einv: " << einv << std::endl;
 
   // std::cout << frame.channels() << std::endl;
   // std::cout << frame.size() << std::endl;
@@ -333,8 +370,8 @@ TEST(test_image_processing, test_find_pattern)
   // promote to homo coords
   cv::Mat rectHomo = ips_cam::toHomo(rect);
 
-  std::cout << extMat.type() << std::endl;
-  std::cout << camIntrinsics.camera_matrix.type() << std::endl;
+  std::cout << "extMat type: " << extMat.type() << std::endl;
+  std::cout << "camera_matrix type: " << camIntrinsics.camera_matrix.type() << std::endl;
 
   // build the full camera matrix
   cv::Mat camMat = camIntrinsics.camera_matrix * extMat;
@@ -349,12 +386,12 @@ TEST(test_image_processing, test_find_pattern)
   cv::Mat camPoly = ips_cam::fromHomo(camPolyHomo);
 
   // round to nearest integers
-  std::cout << camPoly << std::endl;
+  std::cout << "camPoly: " << camPoly << std::endl;
 
   cv::Mat camPolyInt;
   camPoly.convertTo(camPolyInt, CV_32S);
 
-  std::cout << camPolyInt << std::endl;
+  std::cout << "camPolyInt: " << camPolyInt << std::endl;
 
   cv::fillPoly(outputImage_2, camPolyInt.t(), cv::Scalar(0, 0, 255));
 
@@ -362,6 +399,11 @@ TEST(test_image_processing, test_find_pattern)
     cv::imshow("red box", outputImage_2);
     cv::waitKey(1000);
   }
+
+  int answer[2][4] = {{1010, 1023, 1027, 1013}, {588, 588, 600, 600}};
+  auto answerMat = cv::Mat(2, 4, CV_32S, &answer);
+
+  ASSERT_NEAR(cv::norm(camPolyInt, answerMat, cv::NORM_INF), 0, 1);
 
   // cv::fillPoly(frame, camPolyInt.t(), cv::Scalar(0, 0, 255));
   // cv::imwrite("../../../im_ref_tagged.png", frame);
@@ -376,12 +418,12 @@ TEST(test_image_processing, test_matrix_tools)
   // cv::Mat rvec2(3, 2, cv::DataType<double>::type, cv::Scalar::all( 1.0 ));
   // cv::vconcat(rvec, ones, rvech);
   cv::Mat rvech = ips_cam::toHomo(rvec);
-  std::cout << rvec << std::endl;
-  std::cout << rvech << std::endl;
+  std::cout << "rvec: " << rvec << std::endl;
+  std::cout << "rvech: " << rvech << std::endl;
 
   rvech *= 2.0;
 
-  std::cout << rvech << std::endl;
+  std::cout << "rvech: " << rvech << std::endl;
 
   ips_cam::homoDivide(rvech);
 
@@ -396,32 +438,32 @@ TEST(test_image_processing, test_matrix_tools)
   //         c.at<double>(i) = c.at<double>(i) / denom;
   //     }
   // }
-  std::cout << rvech << std::endl;
+  std::cout << "rvech: " << rvech << std::endl;
 
   // remove the last row
   cv::Mat rvec2 = ips_cam::fromHomo(rvech);
   // cv::Mat rvec2 = rvech.rowRange(0,3).clone();
-  std::cout << rvec2 << std::endl;
+  std::cout << "rvec2: " << rvec2 << std::endl;
 
   // remove a column from a matrix
   cv::Mat pmat(3, 4, cv::DataType<double>::type);
   cv::randn(pmat, cv::Scalar(0.0), cv::Scalar(1.0));
-  std::cout << pmat << std::endl;
+  std::cout << "pmat: " << pmat << std::endl;
 
   // cv::Mat pmat_col = pmat.col(2).clone();
   cv::Mat pmat_col = ips_cam::extractColumn(pmat, 2);
   // cv::Mat pmat_col = extractColumn(pmat, 7);
-  std::cout << pmat_col << std::endl;
+  std::cout << "pmat_col: " << pmat_col << std::endl;
 
   // cv::Mat pmat_trimmed = removeColumn(pmat,2);
   cv::Mat pmat_trimmed = ips_cam::removeColumn(pmat, 2);
   // cv::hconcat(pmat.colRange(0,2),pmat.colRange(3,4),pmat_trimmed);
 
-  std::cout << pmat_trimmed << std::endl;
+  std::cout << "pmat_trimmed: " << pmat_trimmed << std::endl;
 
   cv::Mat mv_prod;
   mv_prod = pmat * rvech;
-  std::cout << mv_prod << std::endl;
+  std::cout << "mv_prod: " << mv_prod << std::endl;
 }
 
 TEST(test_image_processing, test_drawing)
@@ -456,7 +498,12 @@ TEST(test_image_processing, test_stuff)
   cv::Mat extent = cv::Mat(2, 1, CV_64F, ext);
 
   cv::Mat rect = MakeWorldRectangleXY(location, extent);
-  std::cout << rect << std::endl;
+  std::cout << "rect: " << rect << std::endl;
+
+  double answer[3][4] = {{-128, -128, -168, -168}, {-128, -168, -168, -128}, {0, 0, 0, 0}};
+  auto answerMat = cv::Mat(3, 4, CV_64F, &answer);
+
+  ASSERT_EQ(cv::norm(rect, answerMat, cv::NORM_INF), 0.0);
 }
 
 TEST(test_image_processing, test_bench_aruco)
@@ -524,6 +571,7 @@ TEST(test_image_processing, test_find_aruco)
   ips_cam::MarkerDetections foundTags = tagFinder.FindMarkers(frame);
 
   std::cout << foundTags.markerIds.size() << std::endl;
+  ASSERT_EQ(foundTags.markerIds.size(), 1);
 
   cv::Mat outputImage = frame.clone();
   cv::aruco::drawDetectedMarkers(outputImage, foundTags.markerCorners, foundTags.markerIds);
@@ -555,6 +603,12 @@ TEST(test_image_processing, test_find_aruco)
   std::vector<cv::Mat> worldCorners;
   tagFinder.ImageToWorld(foundTags, worldCorners);
   std::vector<ips_cam::TagPose> poses = tagFinder.FindMarkerPoses(foundTags, worldCorners);
+
+  double answer[3][4] = {{927.0, 926.7, 1050.9, 1051.0},
+    {538.5, 664.3, 662.0, 536.3}, {1.0, 1.0, 1.0, 1.0}};
+  auto answerMat = cv::Mat(3, 4, CV_64F, &answer);
+
+  ASSERT_NEAR(cv::norm(worldCorners[0], answerMat, cv::NORM_INF), 0.0, 1.0);
 
   if (foundTags.markerIds.size() > 0) {
     std::cout << worldCorners[0] << std::endl;
@@ -623,6 +677,7 @@ TEST(test_image_processing, test_rigid_xform)
 
   double centerx = 10.0;
   double centery = 10.0;
+  // note this is the from tag coords to world coords!
   double theta = -113;
   double scale = 1.4;
   double theta_rad = theta * 3.14159265358979323846 / 180.0;
@@ -650,6 +705,11 @@ TEST(test_image_processing, test_rigid_xform)
   ips_cam::TagPoseEstimator tpe = ips_cam::TagPoseEstimator();
   ips_cam::TagPose my_pose = tpe.estimate(my_points);
   std::cout << my_pose << std::endl;
+
+  ASSERT_NEAR(my_pose.x, 10.0, 0.5);
+  ASSERT_NEAR(my_pose.y, 10.0, 0.5);
+  ASSERT_NEAR(my_pose.z, 0.0, 0.5);
+  ASSERT_NEAR(my_pose.theta, -theta_rad, 0.05);
 }
 
 TEST(test_image_processing, test_yaml_read)
