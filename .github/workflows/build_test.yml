@@ -84,7 +84,7 @@ jobs:
         if: ${{ contains('["melodic", "noetic"]', matrix.ros_distro) }}
         continue-on-error: true
         with:
-          package-name: usb_cam
+          package-name: ips_cam
           target-ros1-distro: ${{ matrix.ros_distro }}
           vcs-repo-file-url: ""
       - name: Build and Test ROS 2
@@ -92,7 +92,7 @@ jobs:
         uses: ros-tooling/action-ros-ci@master
         if: ${{ contains('["melodic", "noetic"]', matrix.ros_distro) == false }}
         with:
-          package-name: usb_cam
+          package-name: ips_cam
           target-ros2-distro: ${{ matrix.ros_distro }}
           vcs-repo-file-url: ""
           colcon-defaults: |
