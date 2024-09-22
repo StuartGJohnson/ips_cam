@@ -81,6 +81,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           path: ros_ws/src
+          token: ${{ secrets.GITHUB_TOKEN }}
       - name: Build and Test ROS 1
         uses: ros-tooling/action-ros-ci@master
         if: ${{ contains('["melodic", "noetic"]', matrix.ros_distro) }}
