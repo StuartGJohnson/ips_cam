@@ -36,6 +36,7 @@
 #include <string>
 #include <fstream>
 #include <iostream>
+#include <filesystem>
 
 #include <opencv2/opencv.hpp>
 #include <opencv2/aruco.hpp>
@@ -183,6 +184,12 @@ TEST(test_node, test_params)
 
 TEST(test_node, test_ips_node)
 {
+  // this will not work without video4linux! I gleaned this check from
+  // trying to get the google actions to work.
+  if (!std::filesystem::exists("/sys/class/video4linux")) {
+    GTEST_SKIP() << "No V4L seems to be installed!";
+  }
+
   rclcpp::init(0, nullptr);
 
   auto executor = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
