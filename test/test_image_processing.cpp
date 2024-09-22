@@ -548,7 +548,7 @@ TEST(test_image_processing, test_bench_aruco)
 
 TEST(test_image_processing, test_find_aruco)
 {
-  bool doPlots = false;
+  bool doPlots = true;
 
   cv::Mat frame;
 
@@ -589,7 +589,7 @@ TEST(test_image_processing, test_find_aruco)
     ics.cameraIntrinsics.dist_coeffs, rvecs, tvecs);
   // draw axis for each marker
   for (uint i = 0; i < foundTags.markerIds.size(); i++) {
-    cv::aruco::drawAxis(
+    cv::drawFrameAxes(
       outputImage,
       ics.cameraIntrinsics.camera_matrix,
       ics.cameraIntrinsics.dist_coeffs, rvecs[i], tvecs[i], 0.1);
