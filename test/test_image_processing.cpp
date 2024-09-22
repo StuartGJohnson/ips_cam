@@ -548,7 +548,7 @@ TEST(test_image_processing, test_bench_aruco)
 
 TEST(test_image_processing, test_find_aruco)
 {
-  bool doPlots = true;
+  bool doPlots = false;
 
   cv::Mat frame;
 
