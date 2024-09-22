@@ -19,7 +19,8 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get -y install curl jq openssh-client
+          sudo apt-get -y install curl jq
+          sudo apt-get install openssh-client
       - name: Get active distributions
         run: |
           wget https://raw.githubusercontent.com/flynneva/active_ros_distros/0.1.0/main.py -O active_ros_distros.py
@@ -77,6 +78,8 @@ jobs:
     steps:
       - name: Setup Directories
         run: mkdir -p ros_ws/src
+      - name: install ssh
+        run: sudo apt-get update && sudo apt-get install -y openssh-client
       - name: checkout
         uses: actions/checkout@v4
         with:
