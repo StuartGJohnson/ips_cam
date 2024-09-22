@@ -108,7 +108,7 @@ IcsParams load_ics_params(std::string filename);
 
 TrackingParams load_tracking_params(std::string filename);
 
-void load_thingy(std::string filename);
+std::map<int, double> load_thingy(std::string filename);
 
 // basic camera coord system tools
 

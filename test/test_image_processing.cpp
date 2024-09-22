@@ -733,19 +733,27 @@ TEST(test_image_processing, test_yaml_read)
 
 TEST(test_image_processing, test_yaml_read2)
 {
-  std::string ipPath = ips_cam::expand_and_check("$PKG/test/data/ips_config/ics_params.yml");
-  std::string tpPath = ips_cam::expand_and_check("$PKG/test/data/ips_config/tracking.yml");
-  ips_cam::IcsParams ip =
-    ips_cam::load_ics_params(ipPath);
-  ips_cam::TrackingParams tp =
-    ips_cam::load_tracking_params(tpPath);
+  std::string ipPath;
+  std::string tpPath;
+  ASSERT_NO_THROW(ipPath = ips_cam::expand_and_check("$PKG/test/data/ips_config/ics_params.yml"));
+  ASSERT_NO_THROW(tpPath = ips_cam::expand_and_check("$PKG/test/data/ips_config/tracking.yml"));
+  ips_cam::IcsParams ip;
+  ips_cam::TrackingParams tp;
+  ASSERT_NO_THROW(ip = ips_cam::load_ics_params(ipPath));
+  ASSERT_NO_THROW(tp = ips_cam::load_tracking_params(tpPath));
+  // todo: check more values from loads
 }
 
 TEST(test_image_processing, test_yaml_read_exp)
 {
-  // load calibration data
-  std::string tPath = ips_cam::expand_and_check("$PKG/test/data/ips_config/thingy.yml");
-  ips_cam::load_thingy(tPath);
+  // load calibration data simulation
+  std::string tPath;
+  ASSERT_NO_THROW(tPath = ips_cam::expand_and_check("$PKG/test/data/ips_config/thingy.yml"));
+  std::map<int, double> thing_map;
+  ASSERT_NO_THROW(thing_map = ips_cam::load_thingy(tPath));
+  ASSERT_EQ(thing_map[1], 5.1);
+  ASSERT_EQ(thing_map[3], 7.3);
+  ASSERT_EQ(thing_map[42], 6.2);
 }
 
 TEST(ExceptionTest, ThrowsRuntimeError)

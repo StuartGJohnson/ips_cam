@@ -136,7 +136,7 @@ TrackingParams load_tracking_params(std::string filename1)
   return p;
 }
 
-void load_thingy(std::string filename)
+std::map<int, double> load_thingy(std::string filename)
 {
   // check file existence
   std::ifstream file;
@@ -176,6 +176,8 @@ void load_thingy(std::string filename)
   if (thing_map.count(key) == 1) {
     std::cout << thing_map[key] << std::endl;
   }
+
+  return thing_map;
 }
 
 cv::Mat toHomoMat(std::vector<cv::Point2f> points)
