@@ -1,18 +1,21 @@
 # ips_cam [![ROS 2 CI](https://github.com/ros-drivers/usb_cam/actions/workflows/build_test.yml/badge.svg)](https://github.com/StuartGJohnson/ips_cam/actions/workflows/build_test.yml)
 
-## A ROS 2 Driver for V4L USB Cameras
-This package is based off of V4L devices specifically instead of just UVC.
+## An Indoor Positioning System based on V4L2 USB Cameras
 
-For ros1 documentation, see [the ROS wiki](http://ros.org/wiki/usb_cam).
+This package is a modification and extension of the ROS2 usb_cam package. Given offline calibration and other setup (see below), ips_cam tracks multiple targets in the camera FOV which are adorned with ARUCO markers. It is assumed these markers physically lie parallel to a single plane (i.e., the floor), and are offset by a known, tag-specific height. An example is one or more robots moving on the floor, each bearing a visible ARUCO tag at a fixed and known height - parallel to the floor at all times. ips_cam streams the orientation and position of each tag (as a ROS PoseStamped topic).
 
-## Supported ROS 2 Distros and Platforms
+Note that it is not the intention of ips_cam to act as a publisher of camera frames. It is possible that some future diagnostic functions might end up providing frames (or an image) in some way. Two primary design principles of ips_cam are:
 
-All Officially supported Linux Distros and corresponding ROS 2 releases are supported. Please create an issue if you experience any problems on these platforms.
+* frame rate
+* image quality/resolution for ARUCO tag pose determination
 
-Windows: TBD/Untested/Unproven
-MacOS: TBD/Untested/Unproven
+In order to address these concerns, ips_cam is designed to process the image stream at high resolution and frame rate at the edge. To this end, V4L2 buffering is used to provide high resolution images. The high resolution image buffers are converted to monochrome via OPENCV. The buffer element is then returned to the V4L2 circular buffer. Detection and localization of ARUCO tag poses then occurs via OPENCV, and tag poses are published to the ROS2 network. This means no transport of large images occurs over the ROS2 network - the image stream only needs to make it to the edge compute resource running ips_cam, which can happen via USB3.
 
-For either MacOS or Windows - if you would like to try and get it working please create an issue to document your effort. If it works we can add it to the instructions here!
+## Tested ROS 2 Distros and Platforms
+
+This package has been tested on a range of recent ROS2 distros (see the build and test actions / CI). Note, however, that V4L2 support for any given camera is likely problematic. ips_cam has been developed with two logitech cameras: the C920 and the MX Brio. It is likely that other camera's support for camera control and format varies, so it should not be expected that any camera will work out of the box. It might be hoped, however!
+
+Windows and Mac platforms have not been tested against or even attempted. Presumably the biggest hurdle would be the platform-specific replacement for V4L2 for these platforms. The package was developed on an x86-64 platform and a Raspberry Pi 4, both running Ubuntu 22.04 and ROS2 Humble.
 
 ## Quickstart
 
