@@ -2,32 +2,20 @@
 
 ## An Indoor Positioning System based on V4L2 USB Cameras
 
-This package is a modification and extension of the ROS2 usb_cam package. Given offline calibration and other setup (see below), ips_cam tracks multiple targets in the camera FOV which are adorned with ARUCO markers. It is assumed these markers physically lie parallel to a single plane (i.e., the floor), and are offset by a known, tag-specific height. An example is one or more robots moving on the floor, each bearing a visible ARUCO tag at a fixed and known height - parallel to the floor at all times. ips_cam streams the orientation and position of each tag (as a ROS PoseStamped topic).
+This package is a modification and extension of the ROS2 usb_cam package. Given offline calibration and other setup (see below), ```ips_cam``` tracks multiple targets in the camera FOV which are adorned with ARUCO markers. It is assumed these markers physically lie parallel to a single plane (i.e., the floor), and are offset by a known, tag-specific height. An example is one or more robots (of possibly different heights) moving on the floor, each bearing a visible ARUCO tag at a fixed and known height - parallel to the floor at all times. ```ips_cam``` streams the orientation and position of each tag (as a ROS PoseStamped topic).
 
-Note that it is not the intention of ips_cam to act as a publisher of camera frames. It is possible that some future diagnostic functions might end up providing frames (or an image) in some way. Two primary design principles of ips_cam are:
+Note that it is not the intention of ```ips_cam``` to act as a publisher of camera frames. It is possible that some future diagnostic functions might end up providing frames (or a few images) in some way. Two primary design principles of ```ips_cam``` are:
 
-* frame rate
-* image quality/resolution for ARUCO tag pose determination
+* maximize frame rate
+* maximize image quality/resolution for ARUCO tag pose determination
 
-In order to address these concerns, ips_cam is designed to process the image stream at high resolution and frame rate at the edge. To this end, V4L2 buffering is used to provide high resolution images. The high resolution image buffers are converted to monochrome via OPENCV. The buffer element is then returned to the V4L2 circular buffer. Detection and localization of ARUCO tag poses then occurs via OPENCV, and tag poses are published to the ROS2 network. This means no transport of large images occurs over the ROS2 network - the image stream only needs to make it to the edge compute resource running ips_cam, which can happen via USB3.
+In order to address these concerns, ```ips_cam``` is designed to process the image stream at high resolution and frame rate at the edge. To this end, V4L2 buffering is used to provide high resolution images. Each high resolution image buffer element is converted/copied to monochrome via OPENCV. The buffer element is then returned to the V4L2 circular buffer. Detection and localization of ARUCO tags then occurs via OPENCV on each monochrome frame, and tag poses are published to the ROS2 network. This means no transport of large images occurs over the ROS2 network - the image stream only needs to make it to the edge compute resource running ```ips_cam```.
 
 ## Tested ROS 2 Distros and Platforms
 
-This package has been tested on a range of recent ROS2 distros (see the build and test actions / CI). Note, however, that V4L2 support for any given camera is likely problematic. ips_cam has been developed with two logitech cameras: the C920 and the MX Brio. It is likely that other camera's support for camera control and format varies, so it should not be expected that any camera will work out of the box. It might be hoped, however!
+This package has been tested on a range of recent ROS2 distros (see the build and test actions / CI). Note, however, that V4L2 support for any given camera is likely problematic. ```ips_cam``` has been developed with several cameras. Development began with the Microsoft LifeCam Studio, but was refined and adapted for use with the Logitech C920 and the Logitech MX Brio. It is likely that other cameras support for specific camera controls and image formats varies, so it should not be expected that any camera will work out of the box. It might be hoped, however! It is generally not too difficult to fork this code, do some camera spelunking with v4l2-ctl (see below), and update the code to support your camera.
 
 Windows and Mac platforms have not been tested against or even attempted. Presumably the biggest hurdle would be the platform-specific replacement for V4L2 for these platforms. The package was developed on an x86-64 platform and a Raspberry Pi 4, both running Ubuntu 22.04 and ROS2 Humble.
-
-## Quickstart
-
-Assuming you have a supported ROS 2 distro installed, run the following command to install the binary release:
-
-```shell
-sudo apt-get install ros-<ros2-distro>-usb-cam
-```
-
-As of today this package should be available for binary installation on all active ROS 2 distros.
-
-If for some reason you cannot install the binaries, follow the directions below to compile from source.
 
 ## Building from Source
 
@@ -35,19 +23,23 @@ Clone/Download the source code into your workspace:
 
 ```shell
 cd /path/to/colcon_ws/src
-git clone https://github.com/ros-drivers/usb_cam.git
+git clone https://github.com/StuartGJohnson/ips_cam.git
 ```
 
-Or click on the green "Download zip" button on the repo's github webpage.
+Once downloaded and ensuring you have sourced your ROS 2 underlay, e.g.:
 
-Once downloaded and ensuring you have sourced your ROS 2 underlay, go ahead and install the dependencies:
+```shell
+source /opt/ros/humble/setup.bash
+```
+
+go ahead and install the dependencies:
 
 ```shell
 cd /path/to/colcon_ws
 rosdep install --from-paths src --ignore-src -y
 ```
 
-From there you should have all the necessary dependencies installed to compile the `usb_cam` package:
+From there you should have all the necessary dependencies installed to compile the `ips_cam` package:
 
 ```shell
 cd /path/to/colcon_ws
@@ -59,13 +51,19 @@ Be sure to source the newly built packages after a successful build.
 
 Once sourced, you should be able to run the package in one of three ways, shown in the next section.
 
+## Configuration
+
+The `ips_cam_node` requires a collection of parameters to run. These settings are all defined in yaml files, and two image files are also required. The example below is taken from a working example in my kitchen using the Logitech MX brio. Unit and functional tests in the `ips_cam` repo include an earlier example developed with the MS LifeCam Studio.
+
+## ```node_params.yaml```
+
+## ```ics_params.yml```
+
+## ```camera_intrinsics.yml```
+
+## ```tracking.yml```
+
 ## Running
-
-The `usb_cam_node` can be ran with default settings, by setting specific parameters either via the command line or by loading in a parameters file.
-
-We provide a "default" params file in the `usb_cam/config/params.yaml` directory to get you started. Feel free to modify this file as you wish.
-
-Also provided is a launch file that should launch the `usb_cam_node_exe` executable along with an additional node that displays an image topic.
 
 The commands to run each of these different ways of starting the node are shown below:
 
