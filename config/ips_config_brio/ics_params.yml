@@ -1,0 +1,11 @@
+%YAML:1.0
+---
+intrinsics_file : "~/IndoorPositioningSystem/ips_config_brio/camera_intrinsics.yml"
+checkerboard_image_file : "~/IndoorPositioningSystem/ips_config_brio/im_ref.png"
+origin_image_file : "~/IndoorPositioningSystem/ips_config_brio/im_ref_aruco.png"
+cbExtentX: 6
+cbExtentY: 4
+cbBlockSize: 198.0
+origin_tag: 1
+origin_tag_z: 0.0
+
