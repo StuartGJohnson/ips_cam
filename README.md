@@ -22,7 +22,7 @@ ARUCO tag detection is entirely accomplished by calls to OPENCV. This involves d
 
 Conversion of image coordinates to the ICS deserves some elaboration. I refer to the following pdf document produced in latex/TexStudio (this makes the equations much easier to produce).
 
-<todo: ICS math>
+[ImageToWorld.pdf](./docs/Image_to_World.pdf)
 
 
 ## Tested ROS 2 Distros and Platforms
