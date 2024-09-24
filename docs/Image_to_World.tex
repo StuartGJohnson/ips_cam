@@ -1,0 +1,130 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{fullpage}
+\usepackage{authblk}
+\usepackage{url}
+\usepackage{physics}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{float}
+\usepackage{tikz}
+\usepackage{hyperref}
+\usepackage{verbatim}
+\usepackage[font=small,labelfont=bf, skip=1pt,center]{caption}
+\DeclareMathOperator*{\minimize}{minimize}
+\usepackage{bm}
+\usepackage{booktabs}
+\usepackage{tabularx}
+
+\newcommand{\normnew}[2]{\left \lVert #1 \right \rVert_{#2}}
+
+\counterwithout{figure}{section}
+
+
+\title{Image-to-world transforms in \texttt{ips\_cam}}
+
+\author{Stuart Johnson}
+\affil{stuart.g.johnson@gmail.com}
+
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\texttt{ips\_cam} assumes that it is viewing multiple ARUCO tags, each at a given height above the floor, and parallel to the plane of the floor. Furthermore, it assumes it is given the camera intrinsic ($K$) and extrinsic matrix ($E$). The intrinsic matrix is the result of camera monocular calibration, and the extrinsic matrix is obtained from an image of a chessboard pattern which defines the world coordinate system (AKA the Indoor Coordinate System or ICS). A step in finding ARUCO tags in the ICS is a conversion of image points to world coordinates.
+
+Writing the full camera projection matrix:
+
+\begin{equation}
+P = K E
+\end{equation}
+
+we have the pinhole camera model:
+
+\begin{equation}
+P \begin{bmatrix}
+X \\
+Y \\
+Z \\
+1
+\end{bmatrix}
+= \lambda \begin{bmatrix}
+u \\
+v \\
+1
+\end{bmatrix}
+\end{equation}
+
+where $[X,Y,Z]$ are world (ICS) coordinates and $[u,v]$ are image (pixel) coordinates. Note that $P \in \mathbb{R}^{3 \times 4}$ and $\lambda$ is a scale factor to be determined by perspective divide. We can extract the third column of $P$ as $P_z$, leaving the remainder of the matrix as $P_{xy}$. We now have:
+
+\begin{equation}
+P_{xy} \begin{bmatrix}
+X \\
+Y \\
+1
+\end{bmatrix}
++
+P_z Z
+= \lambda \begin{bmatrix}
+u \\
+v \\
+1
+\end{bmatrix}
+\end{equation}
+
+$P_{xy} \in \mathbb{R}^{3 \times 3}$ is quite invertible, so we can write, after multiplying on the left by $P^{-1}_{xy}$:
+
+\begin{equation}
+\label{eqn:splitz}
+\begin{bmatrix}
+X \\
+Y \\
+1
+\end{bmatrix}
++
+P^{-1}_{xy} P_z
+= \lambda P^{-1}_{xy} \begin{bmatrix}
+u \\
+v \\
+1
+\end{bmatrix}
+\end{equation}
+
+We now note that $\lambda$ is entirely determined by the third row of this equation:
+
+\begin{equation}
+1
++
+\left(P^{-1}_{xy} P_z \right)_{3,:}
+= \lambda \left( P^{-1}_{xy} \begin{bmatrix}
+u \\
+v \\
+1
+\end{bmatrix}
+\right)_{3,:}
+\end{equation}
+
+where the notation $(M)_{3,:}$ refers to the third row of matrix M. Note that while this example yields a scalar equation in $\lambda$, we typically are solving for 4 corners of an ARUCO tag at once, and so we have an expression for $\lambda$ for each point (a row vector equation, if you will). After solving for each $\lambda$ we then solve for world coordinates using a version of equation \ref{eqn:splitz}:
+
+\begin{equation}
+\begin{bmatrix}
+X \\
+Y \\
+1
+\end{bmatrix}
+=
+\lambda P^{-1}_{xy} \begin{bmatrix}
+u \\
+v \\
+1
+\end{bmatrix}
+- P^{-1}_{xy} P_z
+\end{equation}
+
+Which is to say, we are correcting for an error caused by the perspective shift of ARUCO tags at non-zero $Z$ (height above the floor).
+
+All calculations in the code are carried out with \texttt{OPENCV}'s \texttt{cv::Mat} class - with some custom extensions for matrix row and column surgery.
+
+
+\end{document}
