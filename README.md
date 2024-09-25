@@ -98,7 +98,7 @@ In any of the configuration files, `ips_cam_node` comprehends two special path p
 
 In the examples below, it is assumed that all the files lie in a directory in your home directory called `~/IndoorPositioningSystem/ips_config_brio`. Currently these files are present in the `Config` directory of this package (in `ips_config_brio`).
 
-## ```node_params.yaml``
+## ```node_params.yaml```
 
 `ips_cam_node` has numerous ROS parameters. These will default to values set in the class constructor/init code. Needless to say, all these defaults are probably wrong! An example `node_params.yaml` file is:
 
