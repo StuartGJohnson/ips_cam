@@ -1,5 +1,4 @@
-// Copyright 2023 Evan Flynn
-// Copyright 2014 Robert Bosch, LLC
+// Copyright 2025 Stuart Johnson
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -27,39 +26,16 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+#include "rclcpp/rclcpp.hpp"
+#include "ips_cam/cam_node.hpp"
 
-#ifndef IPS_CAM__CONVERSIONS_HPP_
-#define IPS_CAM__CONVERSIONS_HPP_
-
-#include <string>
-
-#include "opencv2/imgproc.hpp"
-
-#include "ips_cam/constants.hpp"
-#include "ips_cam/utils.hpp"
-
-
-namespace usb_cam
+int main(int argc, char ** argv)
 {
-namespace conversions
-{
+  rclcpp::init(argc, argv);
 
-
-inline std::string FCC2S(const unsigned int & val)
-{
-  std::string s;
-
-  s += val & 0x7f;
-  s += (val >> 8) & 0x7f;
-  s += (val >> 16) & 0x7f;
-  s += (val >> 24) & 0x7f;
-  if (val & (1 << 31)) {
-    s += "-BE";
-  }
-  return s;
+  auto node = std::make_shared<ips_cam::CamNode>(rclcpp::NodeOptions{});
+  node->init();
+  rclcpp::spin(node);
+  rclcpp::shutdown();
+  return 0;
 }
-
-}  // namespace conversions
-}  // namespace usb_cam
-
-#endif  // IPS_CAM__CONVERSIONS_HPP_

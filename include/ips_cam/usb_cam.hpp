@@ -78,7 +78,7 @@ using usb_cam::formats::M4202RGB;
 
 
 /// @brief list all supported formats that this driver supports
-std::vector<std::shared_ptr<pixel_format_base>> driver_supported_formats(
+inline std::vector<std::shared_ptr<pixel_format_base>> driver_supported_formats(
   const formats::format_arguments_t & args = formats::format_arguments_t())
 {
   std::vector<std::shared_ptr<pixel_format_base>> fmts = {

@@ -182,6 +182,52 @@ TEST(test_node, test_params)
   rclcpp::shutdown();
 }
 
+TEST(test_node, test_cam_node)
+{
+  // this will not work without video4linux! I gleaned this check from
+  // trying to get the google actions to work.
+  if (!std::filesystem::exists("/sys/class/video4linux")) {
+    GTEST_SKIP() << "No V4L seems to be installed!";
+  }
+
+  rclcpp::init(0, nullptr);
+
+  auto executor = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
+
+  std::cout << getexepath() << std::endl;
+
+  // Load parameters from the YAML file
+  std::string yaml_file1 = "$PKG/test/data/ips_config/node_params.yaml";
+  std::string yaml_file = ips_cam::expand_and_check(yaml_file1);
+  std::vector<rclcpp::Parameter> parameters = load_parameters_from_yaml(yaml_file, "/**");
+
+  std::cout << parameters.size() << std::endl;
+
+  // Create NodeOptions and pass the loaded parameters
+  rclcpp::NodeOptions options;
+  options.parameter_overrides(parameters);    // Pass parameters to NodeOptions
+
+  auto node = std::make_shared<ips_cam::CamNode>(options);
+
+  node->init();
+
+  executor->add_node(node);
+
+  std::thread t(
+    [&]() {
+      ASSERT_NO_THROW(executor->spin(););
+    }
+  );
+
+  std::this_thread::sleep_for(std::chrono::seconds(5));
+  executor->cancel();
+  t.join();    // Wait for thread completion
+  // executor.spin_once();
+  // executor.cancel();
+
+  rclcpp::shutdown();
+}
+
 TEST(test_node, test_ips_node)
 {
   // this will not work without video4linux! I gleaned this check from
@@ -208,6 +254,8 @@ TEST(test_node, test_ips_node)
   options.parameter_overrides(parameters);    // Pass parameters to NodeOptions
 
   auto node = std::make_shared<ips_cam::IpsCamNode>(options);
+
+  node->init();
 
   executor->add_node(node);
 
