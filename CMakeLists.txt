@@ -174,12 +174,25 @@ install(TARGETS
     LIBRARY DESTINATION lib
     RUNTIME DESTINATION lib/${PROJECT_NAME})
 
-ament_auto_package(
+install(
+  DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION include/${PROJECT_NAME} )
+
+if(DEFINED ENV{ROS_DISTRO} AND "$ENV{ROS_DISTRO}" STREQUAL "humble")
+  # Humble needs the opt-in
+  ament_auto_package(
     INSTALL_TO_SHARE
-      launch
-      config
-    USE_SCOPED_HEADER_INSTALL_DIR
-  )
+     launch
+     config
+    USE_SCOPED_HEADER_INSTALL_DIR)
+else()
+  # Kilted/Rolling: default is scoped
+  ament_auto_package(
+    INSTALL_TO_SHARE
+     launch
+     config) 
+endif()
+
 
 
 #ament_package()
