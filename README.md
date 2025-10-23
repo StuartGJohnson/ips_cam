@@ -1,4 +1,4 @@
-# ips_cam [![ROS 2 CI](https://github.com/ros-drivers/usb_cam/actions/workflows/build_test.yml/badge.svg)](https://github.com/StuartGJohnson/ips_cam/actions/workflows/build_test.yml)
+# ips_cam [![ROS 2 CI](https://github.com/StuartGJohnson/ips_cam/actions/workflows/build_test.yml/badge.svg)](https://github.com/StuartGJohnson/ips_cam/actions/workflows/build_test.yml)
 
 ## An Indoor Positioning System based on V4L2 USB Cameras
 
