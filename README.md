@@ -196,10 +196,34 @@ In this example, I am tracking tags #1 and #2 on 5mm foam-core cards, and #3 tag
 
 ## Running
 
+# Initialization
+
+As noted above, we need two images to set up our local robot coordinate system (not counting all the images/shenanigans associated with determining camera intrinsics). In order to accelerate this process, the ```ips_cam``` package offers a node which snapshots photos for you. Usage of this node is:
+
+```
+ros2 run ips_cam cam_node --ros-args --params-file <node_params.yaml>
+```
+
+Then, one can place the coordinate chessboard and do (for example):
+
+```
+ros2 service call /ips_cam/snapshot ips_cam/srv/Snapshot "{filename: '/tmp/im_ref.png'}"
+```
+
+And, after placing the aruco tag on the origin of choice:
+
+```
+ros2 service call /ips_cam/snapshot ips_cam/srv/Snapshot "{filename: '/tmp/im_ref_aruco.png'}"
+```
+
+Then this node can be killed and the tracking mode started (next section). The two image files produced should be placed somewhere advisable and referenced properly in the ```<node_params.yaml>``` file.
+
+# Tracking
+
 After defining the configurations in the previous section, running the node is straightforward.
 
-```shell
-ros2 run ips_cam ips_cam_node_exe --ros-args --params-file <node_params.yaml>
+```
+ros2 run ips_cam ips_cam_node --ros-args --params-file <node_params.yaml>
 ```
 
 where ```<node_params.yaml>``` resolves to the path of the file described above. 
