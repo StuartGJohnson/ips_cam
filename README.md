@@ -216,7 +216,7 @@ And, after placing the aruco tag on the origin of choice:
 ros2 service call /ips_cam/snapshot ips_cam/srv/Snapshot "{filename: '/tmp/im_ref_aruco.png'}"
 ```
 
-Then this node can be killed and the tracking mode started (next section). The two image files produced should be placed somewhere advisable and referenced properly in the ```<node_params.yaml>``` file.
+Then this node can be killed and the tracking mode started (next section). The two image files produced should be placed somewhere advisable and referenced properly in the ```<ics_params.yml>``` file.
 
 # Tracking
 
