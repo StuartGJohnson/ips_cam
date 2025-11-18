@@ -285,6 +285,7 @@ TEST(test_node, test_read_yaml)
 
 TEST(test_node, test_quat)
 {
+  //todo: the TagPose should be in meters!
   ips_cam::TagPose tp;
   geometry_msgs::msg::Pose ros_pose;
   tp.x = 1.0;
@@ -299,8 +300,8 @@ TEST(test_node, test_quat)
   std::cout << ros_pose.position.x << std::endl;
   std::cout << ros_pose.position.y << std::endl;
 
-  ASSERT_EQ(ros_pose.position.x, tp.x);
-  ASSERT_EQ(ros_pose.position.y, tp.y);
+  ASSERT_EQ(ros_pose.position.x, tp.x * 1e-3);
+  ASSERT_EQ(ros_pose.position.y, tp.y * 1e-3);
   ASSERT_EQ(ros_pose.orientation.w, std::cos(tp.theta / 2.0));
   ASSERT_EQ(ros_pose.orientation.z, std::sin(tp.theta / 2.0));
   ASSERT_EQ(ros_pose.orientation.x, 0);

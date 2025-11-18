@@ -341,7 +341,6 @@ void CamNode::snapshot_callback(
 
 bool CamNode::take_and_process_image()
 {
-
   usb_cam::buffered_image buff_im = m_camera->get_buffered_image();
 
   bool ok = false;
