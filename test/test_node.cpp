@@ -285,7 +285,7 @@ TEST(test_node, test_read_yaml)
 
 TEST(test_node, test_quat)
 {
-  //todo: the TagPose should be in meters!
+  // todo: the TagPose should be in meters!
   ips_cam::TagPose tp;
   geometry_msgs::msg::Pose ros_pose;
   tp.x = 1.0;

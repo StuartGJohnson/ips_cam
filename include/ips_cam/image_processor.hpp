@@ -73,7 +73,7 @@ struct TrackingParams
 
 struct TagPose
 {
-  //todo: although units are converted to ros units (meters) on publish,
+  // todo: although units are converted to ros units (meters) on publish,
   // ips units should be meters for simplicity.
   // The pose of an aruco tag in the world coordinate system.
   int tag;
