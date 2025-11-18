@@ -317,7 +317,7 @@ bool CamNode::check_device()
 
 void CamNode::update()
 {
-  if (m_camera->is_capturing() && do_snapshot_) {
+  if (m_camera->is_capturing()) {
     // If the camera exposure longer higher than the framerate period
     // then that caps the framerate.
     // auto t0 = now();
@@ -341,32 +341,39 @@ void CamNode::snapshot_callback(
 
 bool CamNode::take_and_process_image()
 {
+
   usb_cam::buffered_image buff_im = m_camera->get_buffered_image();
 
+  bool ok = false;
+
   if (buff_im.valid) {
-    // grab timestamp
-    // struct timespec timestamp = buff_im.stamp;
+    // whether or not you are using this frame, you gotta take it and flush it.
+    // otherwise, you get the first frame the camera took on startup. Sigh.
+    if (do_snapshot_) {
+      // process the frame
+      // form an image suitable for opencv reduction computations.
+      cv::Mat src_image(buff_im.height, buff_im.width, CV_8UC2, buff_im.data);
+      cv::Mat snapshot_image;
+      cv::cvtColor(src_image, snapshot_image, cv::COLOR_YUV2BGR_YUYV);
 
-    // process the frame
-    // form an image suitable for opencv reduction computations.
-    cv::Mat src_image(buff_im.height, buff_im.width, CV_8UC2, buff_im.data);
-    cv::Mat snapshot_image;
-    cv::cvtColor(src_image, snapshot_image, cv::COLOR_YUV2BGR_YUYV);
+      std::ostringstream oss;
+      oss << "snapshot: " << buff_im.height << " ; " << buff_im.width;
+      std::string oss_string = oss.str();
 
-    std::ostringstream oss;
-    oss << "snapshot: " << buff_im.height << " ; " << buff_im.width;
-    std::string oss_string = oss.str();
+      // done with the buffer - return to v4l2
+      m_camera->release_buffered_image(buff_im);
 
-    // done with the buffer - return to v4l2
-    m_camera->release_buffered_image(buff_im);
+      do_snapshot_ = false;
 
-    do_snapshot_ = false;
+      RCLCPP_INFO(this->get_logger(), oss_string.c_str());
 
-
-    RCLCPP_INFO(this->get_logger(), oss_string.c_str());
-
-    // write the image to a file
-    bool ok = cv::imwrite(snapshot_filename_, snapshot_image);
+      // write the image to a file
+      ok = cv::imwrite(snapshot_filename_, snapshot_image);
+    } else {
+      // done with the buffer - return to v4l2
+      m_camera->release_buffered_image(buff_im);
+      ok = true;
+    }
 
     return ok;
   } else {
