@@ -17,6 +17,7 @@ Unlike `usb_cam`, it is not the intention of `ips_cam` to act as a publisher of 
 
 * maximize frame rate
 * maximize image quality/resolution for ARUCO tag pose determination
+* allow for change of image stream resolution separately from calibration image resolution
 
 In order to address these concerns, `ips_cam` is designed to process the image stream at high resolution and frame rate at the edge. To this end, V4L2 buffering is used to provide high resolution images. Each high resolution image buffer element is converted/copied to monochrome via OPENCV. The buffer element is then returned to the V4L2 circular buffer. Detection and localization of ARUCO tags then occurs via OPENCV on each monochrome frame, and tag poses are published to the ROS2 network. This means no transport of large images occurs over the ROS2 network - the image stream only needs to make it to the edge compute resource running `ips_cam`.
 
@@ -220,7 +221,14 @@ Then this node can be killed and the tracking mode started (next section). The t
 
 # Tracking
 
-After defining the configurations in the previous section, running the node is straightforward.
+After defining the configurations in the previous section, running the node is straightforward. You do have some additional options to allow flexibility of use. In particular, the image height and width defined by the ```<node_params.yaml>``` file can be updated to chase better tracking throughput and latency. In particular, I have found that a raspberry pi4 with a logitech brio running at 1280x720 (720p) can manage 22 hz update rate with a latency of 72 ms. This is measured by executing (for an object tagged with aruco tag #1):
+
+```
+ros2 topic hz /object_1
+ros2 topic delay /object_1
+```
+
+Starting the tracking can be done as follows:
 
 ```
 ros2 run ips_cam ips_cam_node --ros-args --params-file <node_params.yaml>
