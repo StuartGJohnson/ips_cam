@@ -84,6 +84,9 @@ void IpsCamNode::init()
   // setup image processing from configs
   ics = EstablishIndoorCoordinateSystem(icsParams);
 
+  // prepare for different-sized image stream
+  ics.ScaleIntrinsics(m_parameters.image_width, m_parameters.image_height);
+
   tagFinder = std::make_unique<ObjectTracker>(ics, trackingParams.tag_lookup);
 
   // set the IO method

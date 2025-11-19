@@ -202,6 +202,74 @@ TEST(test_image_processing, test_ics)
   std::cout << "aruco2: " << poses22[0] << std::endl;
 }
 
+TEST(test_image_processing, test_ics_scaled)
+{
+  // check that the tagfinder is robust to changing image stream resolution
+  std::string aruco1Path =
+    ips_cam::expand_and_check("$PKG/test/data/ips_config/im_ref2_aruco1.png");
+  std::string aruco2Path =
+    ips_cam::expand_and_check("$PKG/test/data/ips_config/im_ref2_aruco2.png");
+  auto aruco1_raw = cv::imread(aruco1Path, cv::IMREAD_COLOR);
+  auto aruco2_raw = cv::imread(aruco2Path, cv::IMREAD_COLOR);
+
+  cv::Mat aruco1;
+  cv::Mat aruco2;
+
+  cv::resize(aruco1_raw, aruco1, cv::Size(800, 600));
+  cv::resize(aruco2_raw, aruco2, cv::Size(800, 600));
+
+  ips_cam::IndoorCoordSystem ics1 = SetupICS(1);
+
+  ics1.ScaleIntrinsics(800, 600);
+
+  // look for tag 1 at z=0
+  std::map<int, double> tags;
+  tags[1] = 0.0;
+
+  // the expected results are somewhat subtle...
+
+  std::cout << "ics1:" << std::endl;
+  ips_cam::ObjectTracker tagFinder1 = ips_cam::ObjectTracker(ics1, tags);
+  auto poses11 = tagFinder1.Track(aruco1);
+  ASSERT_EQ(poses11.size(), 1);
+  ASSERT_EQ(poses11[0].tag, 1);
+  ASSERT_NEAR(poses11[0].theta, -3.14 / 2, 0.1);
+  ASSERT_NEAR(poses11[0].x, 0.0, 50.0);
+  ASSERT_NEAR(poses11[0].y, 0.0, 50.0);
+  ASSERT_EQ(poses11[0].z, 0.0);
+  std::cout << "aruco1: " << poses11[0] << std::endl;
+  auto poses12 = tagFinder1.Track(aruco2);
+  ASSERT_EQ(poses12.size(), 1);
+  ASSERT_EQ(poses12[0].tag, 1);
+  ASSERT_NEAR(poses12[0].theta, 3.14 / 2, 0.1);
+  ASSERT_NEAR(poses12[0].x, 5 * 198.0, 50.0);
+  ASSERT_NEAR(poses12[0].y, 3 * 198.0, 50.0);
+  ASSERT_EQ(poses12[0].z, 0.0);
+  std::cout << "aruco2: " << poses12[0] << std::endl;
+
+  ips_cam::IndoorCoordSystem ics2 = SetupICS(2);
+  ics2.ScaleIntrinsics(800, 600);
+
+  std::cout << "ics2:" << std::endl;
+  ips_cam::ObjectTracker tagFinder2 = ips_cam::ObjectTracker(ics2, tags);
+  auto poses21 = tagFinder2.Track(aruco1);
+  ASSERT_EQ(poses21.size(), 1);
+  ASSERT_EQ(poses21[0].tag, 1);
+  ASSERT_NEAR(poses21[0].theta, 3.14 / 2, 0.1);
+  ASSERT_NEAR(poses21[0].x, 5 * 198.0, 50.0);
+  ASSERT_NEAR(poses21[0].y, 3 * 198.0, 50.0);
+  ASSERT_EQ(poses21[0].z, 0.0);
+  std::cout << "aruco1: " << poses21[0] << std::endl;
+  auto poses22 = tagFinder2.Track(aruco2);
+  ASSERT_EQ(poses22.size(), 1);
+  ASSERT_EQ(poses22[0].tag, 1);
+  ASSERT_NEAR(poses22[0].theta, -3.14 / 2, 0.1);
+  ASSERT_NEAR(poses22[0].x, 0.0, 50.0);
+  ASSERT_NEAR(poses22[0].y, 0.0, 50.0);
+  ASSERT_EQ(poses22[0].z, 0.0);
+  std::cout << "aruco2: " << poses22[0] << std::endl;
+}
+
 TEST(test_image_processing, test_find_pattern)
 {
   // change to true for plots

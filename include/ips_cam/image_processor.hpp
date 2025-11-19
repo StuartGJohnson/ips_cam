@@ -180,6 +180,17 @@ struct IndoorCoordSystem
     extMat = extMat * extFlip;
     extMatFull = extMatFull * extFlip;
   }
+
+  // prepare for an image stream of different resolution than the calibration
+  // images
+  void ScaleIntrinsics(int imgStreamWidth, int imgStreamHeight)
+  {
+    double scaleHeight = imgStreamHeight / static_cast<double>(cameraIntrinsics.image_height);
+    double scaleWidth = imgStreamWidth / static_cast<double>(cameraIntrinsics.image_width);
+    double data[] = {scaleWidth, 0, 0, 0, scaleHeight, 0, 0, 0, 1};
+    cv::Mat scaleMatrix(3, 3, CV_64F, data);
+    cameraIntrinsics.camera_matrix = scaleMatrix * cameraIntrinsics.camera_matrix;
+  }
 };
 
 IndoorCoordSystem EstablishIndoorCoordinateSystem(
