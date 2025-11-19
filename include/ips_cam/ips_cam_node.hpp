@@ -62,7 +62,8 @@ void from_tag_pose(TagPose & tagPose, geometry_msgs::msg::Pose & ros_pose)
   // to meters!
   ros_pose.position.x = tagPose.x * 1e-3;
   ros_pose.position.y = tagPose.y * 1e-3;
-  ros_pose.position.z = tagPose.z * 1e-3;
+  ros_pose.position.z = 0.0;
+  //ros_pose.position.z = tagPose.z * 1e-3;
   // quaternion from angle. Note this is planar motion, with rotation about zhat.
   tf2::Quaternion q;
   tf2::Vector3 z(0.0, 0.0, 1.0);
