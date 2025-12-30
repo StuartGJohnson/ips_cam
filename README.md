@@ -97,7 +97,7 @@ In any of the configuration files, `ips_cam_node` comprehends two special path p
 * `~` : your home directory
 * `$PKG` : the package build directory. This is used in testing.
 
-In the examples below, it is assumed that all the files lie in a directory in your home directory called `~/IndoorPositioningSystem/ips_config_brio`. Currently these files are present in the `Config` directory of this package (in `ips_config_brio`).
+In the examples below, it is assumed that all the files lie in a directory in your home directory called `~/IndoorPositioningSystem/ips_config_brio`. Currently these files are present in the `example_configs` directory of this package (in `ips_config_brio`).
 
 ## ```node_params.yaml```
 
@@ -110,9 +110,10 @@ In the examples below, it is assumed that all the files lie in a directory in yo
       framerate: 30.0
       io_method: "mmap"
       frame_id: "camera"
-      pixel_format: "yuyv"
-      image_width: 1920
-      image_height: 1080
+      pixel_format: "mjpeg2rgb"  # see usb_cam/supported_formats for list of supported formats
+      av_device_format: "RGB24"
+      image_width: 1280
+      image_height: 720
       camera_name: "test_camera"
       ics_params_file: "~/IndoorPositioningSystem/ips_config_brio/ics_params.yml"
       tracking_params_file: "~/IndoorPositioningSystem/ips_config_brio/tracking.yml"
@@ -138,8 +139,8 @@ This file defines everything needed to interpret the coordinate system chessboar
 %YAML:1.0
 ---
 intrinsics_file : "~/IndoorPositioningSystem/ips_config_brio/camera_intrinsics.yml"
-checkerboard_image_file : "~/IndoorPositioningSystem/ips_config_brio/im_ref.png"
-origin_image_file : "~/IndoorPositioningSystem/ips_config_brio/im_ref_aruco.png"
+checkerboard_image_file : "~/IndoorPositioningSystem/ips_config_brio/im_ref_2025_12_29.png"
+origin_image_file : "~/IndoorPositioningSystem/ips_config_brio/im_ref_aruco_2025_12_29.png"
 cbExtentX: 6
 cbExtentY: 4
 cbBlockSize: 198.0
@@ -151,11 +152,11 @@ In this case, the pattern block size is 198mm and the chessboard is 6x4 (interna
 
 The image of the chessboard pattern for the determination of the ICS is:
 
-![ICS Chessboard](./example_configs/ips_config_brio/im_ref_2025_11_29.png)
+![ICS Chessboard](./example_configs/ips_config_brio/im_ref_2025_12_29.png)
 
 Since there are two possible coordinate systems (origin at upper right or lower left), `ips_cam` requires another image with the tag of choice at `(0,0)`. Thus:
 
-![ICS origin tag](./example_configs/ips_config_brio/im_ref_aruco_2025_11_29.png)
+![ICS origin tag](./example_configs/ips_config_brio/im_ref_aruco_2025_12_29.png)
 
 So that X in the ICS is roughly left to right in the image, and Y is from bottom to top. Pose topics are reported in mm using the configuration files included here.
 
@@ -204,7 +205,29 @@ As noted above, we need two images to set up our local robot coordinate system (
 ```
 ros2 run ips_cam cam_node --ros-args --params-file <node_params_setup.yaml>
 ```
-Although, in principle, one can adjust camera intrinsics for images of a different width and height (and this IS done with the tracking mode - see below), the current code requires that the image size in the camera intrinsics yaml file is the same as the images collected for setup (the next two images). I typically have a ```node_params_setup.yaml``` file for the initialization/setup task (this section) and a ```node_params.yaml``` file with my tracking imaging parameters - which I usually adjust a bit to achieve a faster frame rate.
+Although, in principle, one can adjust camera intrinsics for images of a different width and height (and this IS done with the tracking mode - see below), the current code requires that the image size in the camera intrinsics yaml file is the same as the images collected for setup (the next two images). I typically have a ```node_params_setup.yaml``` file for the initialization/setup task (this section) and a ```node_params.yaml``` file with my tracking imaging parameters - which I usually adjust to achieve a faster frame rate (e.g, from YUYV to MJPEG). The file I used (in `example_configs/ips_config_brio/node_params_setup.yaml`) is :
+
+```yml
+/**:
+    ros__parameters:
+      video_device: "/dev/video0"
+      framerate: 30.0
+      io_method: "mmap"
+      frame_id: "camera"
+      pixel_format: "yuyv"  # see usb_cam/supported_formats for list of supported formats
+      image_width: 1920
+      image_height: 1080
+      camera_name: "test_camera"
+      ics_params_file: "~/IndoorPositioningSystem/ips_config_brio/ics_params.yml"
+      tracking_params_file: "~/IndoorPositioningSystem/ips_config_brio/tracking.yml"
+      autofocus: false
+      focus: 36
+      auto_white_balance: false
+      white_balance: 4000
+      autoexposure: true
+      exposure: 300
+```
+
 
 Then, one can place the coordinate chessboard and do (for example):
 
@@ -222,7 +245,7 @@ Then this node can be killed and the tracking mode started (next section). The t
 
 # Tracking
 
-After defining the configurations in the previous section, running the node is straightforward. You do have some additional options to allow flexibility of use. In particular, the image height and width defined by the ```<node_params.yaml>``` file can be updated to chase better tracking throughput and latency. In particular, I have found that a raspberry pi4 with a logitech brio running at 1280x720 (720p) can manage 22 hz update rate with a latency of 72 ms. This is measured by executing (for an object tagged with aruco tag #1):
+After defining the configurations in the previous section, running the node is straightforward. You do have some additional options to allow flexibility of use. In particular, the image height and width defined by the ```<node_params.yaml>``` file can be updated to chase better tracking throughput and latency. In particular, I have found that a raspberry pi4 with a logitech brio running at 1280x720 (720p) can manage ~30 hz update rate with a latency of ~50 ms using `MJPEG`. This is measured by executing (for an object tagged with aruco tag #1):
 
 ```
 ros2 topic hz /object_1
@@ -292,13 +315,13 @@ of each](https://lwn.net/Articles/240667/). Also see the original `usb_cam` ROS2
 
 ## Image Compression
 
-Currently `ips_cam` does not support processing a compressed image stream, nor in fact does it support any format other than YUYV. This is determined by the
+Currently `ips_cam` supports YUYV and MJPEG. See the 
 
 ```code
  IpsCamNode::take_and_process_image()
  ```
 
-method. This method needs to know 2 things about the frame stream: the OPENCV pixel type (e.g., `CV_8UC2`) and how to convert the (color) frame to monochrome. Lower bandwidth (e.g. USB2) cameras typically support high resolution images via MJPEG encoding. We will need to add code to support this stream type (via configuration) and uncompress each image via OPENCV's `imdecode()`. The down side of (M)JPEG is lossy compression.
+method. This method needs to know 2 things about the frame stream: the OPENCV pixel type (e.g., `CV_8UC2`) and how to convert the (color) frame to monochrome. Note that the down side of (M)JPEG is lossy compression. It does not seem to be having a huge impact on tag tracking, but I have not done a detailed analysis for moving objects. Originally, this code was running at ~22Hz in YUYV 1280x720, but, for some unknown reason (perhaps v4l2 updates in ubuntu) this BW was not repeatable. It is possible there were camera settings made inadvertently which caused the RPI4 to support higher BW over it's USB3 ports.
 
 ## Address and leak sanitizing
 
