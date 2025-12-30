@@ -273,6 +273,17 @@ void CamNode::init()
     return;
   }
 
+  // yes, this is a bit hacky given what usb_cam seemed to originally support.
+  // on the other hand, we are processing the images here in opencv, so perhaps
+  // this is a natural outcome of choosing usb_cam as a starting point.
+  if (m_parameters.pixel_format_name != "yuyv") {
+    RCLCPP_ERROR_ONCE(
+      this->get_logger(),
+      "Unsupported pixel format '%s'", m_parameters.pixel_format_name.c_str());
+    rclcpp::shutdown();
+    return;
+  }
+
   // configure the camera
   m_camera->configure(m_parameters, io_method);
 

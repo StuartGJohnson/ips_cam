@@ -151,11 +151,11 @@ In this case, the pattern block size is 198mm and the chessboard is 6x4 (interna
 
 The image of the chessboard pattern for the determination of the ICS is:
 
-![ICS Chessboard](./config/ips_config_brio/im_ref.png)
+![ICS Chessboard](./example_configs/ips_config_brio/im_ref_2025_11_29.png)
 
 Since there are two possible coordinate systems (origin at upper right or lower left), `ips_cam` requires another image with the tag of choice at `(0,0)`. Thus:
 
-![ICS origin tag](./config/ips_config_brio/im_ref_aruco.png)
+![ICS origin tag](./example_configs/ips_config_brio/im_ref_aruco_2025_11_29.png)
 
 So that X in the ICS is roughly left to right in the image, and Y is from bottom to top. Pose topics are reported in mm using the configuration files included here.
 

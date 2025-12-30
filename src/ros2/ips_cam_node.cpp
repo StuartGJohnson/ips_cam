@@ -100,6 +100,17 @@ void IpsCamNode::init()
     return;
   }
 
+  // yes, this is a bit hacky given what usb_cam seemed to originally support.
+  // on the other hand, we are processing the images here in opencv, so perhaps
+  // this is a natural outcome of choosing usb_cam as a starting point.
+  if (m_parameters.pixel_format_name != "yuyv" && m_parameters.pixel_format_name != "mjpeg2rgb") {
+    RCLCPP_ERROR_ONCE(
+      this->get_logger(),
+      "Unsupported pixel format '%s'", m_parameters.pixel_format_name.c_str());
+    rclcpp::shutdown();
+    return;
+  }
+
   // configure the camera
   m_camera->configure(m_parameters, io_method);
 
@@ -150,8 +161,16 @@ bool IpsCamNode::take_and_process_image()
 
     // process the frame
     // form an image suitable for opencv reduction computations.
-    cv::Mat src_image(buff_im.height, buff_im.width, CV_8UC2, buff_im.data);
-    cv::cvtColor(src_image, detection_image, cv::COLOR_YUV2GRAY_YUYV);
+    if (m_parameters.pixel_format_name == "yuyv")
+    {
+      cv::Mat src_image(buff_im.height, buff_im.width, CV_8UC2, buff_im.data);
+      cv::cvtColor(src_image, detection_image, cv::COLOR_YUV2GRAY_YUYV);
+    }
+    else if (m_parameters.pixel_format_name == "mjpeg2rgb")
+    {
+      cv::Mat encoded(1, (int)buff_im.buf.bytesused, CV_8UC1, buff_im.data);
+      detection_image = cv::imdecode(encoded, cv::IMREAD_GRAYSCALE);
+    }
 
     // done with the buffer - return to v4l2
     m_camera->release_buffered_image(buff_im);

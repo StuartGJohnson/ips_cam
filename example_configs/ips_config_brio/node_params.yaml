@@ -4,10 +4,10 @@
       framerate: 30.0 
       io_method: "mmap"
       frame_id: "camera"
-      pixel_format: "yuyv"  # see usb_cam/supported_formats for list of supported formats
-        #av_device_format: "MJPG"
-      image_width: 1920 
-      image_height: 1080
+      pixel_format: "mjpeg2rgb"  # see usb_cam/supported_formats for list of supported formats
+      av_device_format: "RGB24"
+      image_width: 1280 
+      image_height: 720 
       camera_name: "test_camera"
       #camera_info_url: "package://usb_cam/config/camera_info.yaml"
       ics_params_file: "~/IndoorPositioningSystem/ips_config_brio/ics_params.yml"

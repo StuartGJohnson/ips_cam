@@ -183,14 +183,12 @@ if(DEFINED ENV{ROS_DISTRO} AND "$ENV{ROS_DISTRO}" STREQUAL "humble")
   ament_auto_package(
     INSTALL_TO_SHARE
      launch
-     config
     USE_SCOPED_HEADER_INSTALL_DIR)
 else()
   # Kilted/Rolling: default is scoped
   ament_auto_package(
     INSTALL_TO_SHARE
-     launch
-     config) 
+     launch)
 endif()
 
 
