@@ -161,14 +161,11 @@ bool IpsCamNode::take_and_process_image()
 
     // process the frame
     // form an image suitable for opencv reduction computations.
-    if (m_parameters.pixel_format_name == "yuyv")
-    {
+    if (m_parameters.pixel_format_name == "yuyv") {
       cv::Mat src_image(buff_im.height, buff_im.width, CV_8UC2, buff_im.data);
       cv::cvtColor(src_image, detection_image, cv::COLOR_YUV2GRAY_YUYV);
-    }
-    else if (m_parameters.pixel_format_name == "mjpeg2rgb")
-    {
-      cv::Mat encoded(1, (int)buff_im.buf.bytesused, CV_8UC1, buff_im.data);
+    } else if (m_parameters.pixel_format_name == "mjpeg2rgb") {
+      cv::Mat encoded(1, static_cast<int>(buff_im.buf.bytesused), CV_8UC1, buff_im.data);
       detection_image = cv::imdecode(encoded, cv::IMREAD_GRAYSCALE);
     }
 
