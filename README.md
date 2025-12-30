@@ -202,8 +202,9 @@ In this example, I am tracking tags #1 and #2 on 5mm foam-core cards, and #3 tag
 As noted above, we need two images to set up our local robot coordinate system (not counting all the images/shenanigans associated with determining camera intrinsics). In order to accelerate this process, the ```ips_cam``` package offers a node which snapshots photos for you. Usage of this node is:
 
 ```
-ros2 run ips_cam cam_node --ros-args --params-file <node_params.yaml>
+ros2 run ips_cam cam_node --ros-args --params-file <node_params_setup.yaml>
 ```
+Although, in principle, one can adjust camera intrinsics for images of a different width and height (and this IS done with the tracking mode - see below), the current code requires that the image size in the camera intrinsics yaml file is the same as the images collected for setup (the next two images). I typically have a ```node_params_setup.yaml``` file for the initialization/setup task (this section) and a ```node_params.yaml``` file with my tracking imaging parameters - which I usually adjust a bit to achieve a faster frame rate.
 
 Then, one can place the coordinate chessboard and do (for example):
 
