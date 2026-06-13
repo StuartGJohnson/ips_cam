@@ -73,7 +73,7 @@ target_include_directories(${PROJECT_NAME}_lib PUBLIC
   ${OpenCV_INCLUDE_DIRS}
 )
 
-# ament_target_dependencies was removed in ament_cmake 2.8.5+ (jazzy/rolling/kilted).
+# ament_target_dependencies was removed in ament_cmake 2.8.5+ (jazzy/rolling/lyrical).
 # Use it when available (humble), otherwise fall back to ament_auto_depend_on_packages.
 if(COMMAND ament_target_dependencies)
   ament_target_dependencies(${PROJECT_NAME}_lib
