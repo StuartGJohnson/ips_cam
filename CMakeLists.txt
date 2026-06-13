@@ -73,16 +73,32 @@ target_include_directories(${PROJECT_NAME}_lib PUBLIC
   ${OpenCV_INCLUDE_DIRS}
 )
 
-ament_target_dependencies(${PROJECT_NAME}_lib
-  tf2
-  tf2_geometry_msgs
-  yaml-cpp
-  ament_index_cpp
-  camera_info_manager
-  std_msgs
-  image_transport
-  std_srvs
-)
+# ament_target_dependencies was removed in ament_cmake 2.8.5+ (rolling/kilted).
+# Use it when available (humble), otherwise fall back to ament_auto_depend_on_packages.
+if(COMMAND ament_target_dependencies)
+  ament_target_dependencies(${PROJECT_NAME}_lib
+    tf2
+    tf2_geometry_msgs
+    yaml-cpp
+    ament_index_cpp
+    camera_info_manager
+    std_msgs
+    image_transport
+    std_srvs
+  )
+else()
+  ament_auto_depend_on_packages(${PROJECT_NAME}_lib
+    PACKAGES
+    tf2
+    tf2_geometry_msgs
+    yaml-cpp
+    ament_index_cpp
+    camera_info_manager
+    std_msgs
+    image_transport
+    std_srvs
+  )
+endif()
 
 add_dependencies(${PROJECT_NAME}_lib ${PROJECT_NAME}__rosidl_generator_cpp)
 
