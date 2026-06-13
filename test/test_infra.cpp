@@ -29,12 +29,20 @@
 #include <gtest/gtest.h>
 #include <ips_cam/image_processor.hpp>
 #include <opencv2/opencv.hpp>
+#if __has_include(<ament_index_cpp/get_package_share_path.hpp>)
+#include <ament_index_cpp/get_package_share_path.hpp>
+#else
 #include <ament_index_cpp/get_package_share_directory.hpp>
+#endif
 
 TEST(test_infra, test_find_file1)
 {
   std::string package_share_directory =
+#if __has_include(<ament_index_cpp/get_package_share_path.hpp>)
+    ament_index_cpp::get_package_share_path("ips_cam").string();
+#else
     ament_index_cpp::get_package_share_directory("ips_cam");
+#endif
   std::string data_directory = package_share_directory + "/test/data/ips_config/";
 
   std::cout << data_directory << std::endl;
