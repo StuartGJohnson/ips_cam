@@ -253,8 +253,8 @@ public:
   double z;
 
   // configuration
-  cv::aruco::DetectorParameters detectorParams;
-  cv::aruco::Dictionary dictionary;
+  cv::Ptr<cv::aruco::DetectorParameters> detectorParams;
+  cv::Ptr<cv::aruco::Dictionary> dictionary;
   TagPoseEstimator tagPoseEstimator;
 
   std::map<int, ImagePointsToWorldPoints> imgToWorld;

@@ -313,8 +313,9 @@ ObjectTracker::ObjectTracker(IndoorCoordSystem ics_init, std::map<int, double> t
   }
 
   // prep for calling the object tracker computation over and over
-  detectorParams = cv::aruco::DetectorParameters();
-  dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_5X5_50);
+  detectorParams = cv::aruco::DetectorParameters::create();
+  dictionary = cv::makePtr<cv::aruco::Dictionary>(
+    cv::aruco::getPredefinedDictionary(cv::aruco::DICT_5X5_50));
 
   tagPoseEstimator = TagPoseEstimator();
 }
