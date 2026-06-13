@@ -321,7 +321,9 @@ ObjectTracker::ObjectTracker(IndoorCoordSystem ics_init, std::map<int, double> t
   }
 
   // prep for calling the object tracker computation over and over
-  detectorParams = cv::aruco::DetectorParameters::create();
+  // DetectorParameters::create() was removed in OpenCV 4.7+; cv::makePtr with
+  // the default constructor is equivalent and works across all OpenCV versions.
+  detectorParams = cv::makePtr<cv::aruco::DetectorParameters>();
   dictionary = cv::makePtr<cv::aruco::Dictionary>(
     cv::aruco::getPredefinedDictionary(cv::aruco::DICT_5X5_50));
 
