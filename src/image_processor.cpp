@@ -39,7 +39,7 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/aruco.hpp>
 #include <ips_cam/image_processor.hpp>
-#include <ament_index_cpp/get_package_share_directory.hpp>
+#include <ament_index_cpp/get_package_share_path.hpp>
 
 namespace ips_cam
 {
@@ -56,7 +56,7 @@ std::string expand_special(const std::string & path)
   auto tmp = path.substr(0, 4);
   if (!path.empty() && path.substr(0, 4) == "$PKG") {
     std::string package_share_directory =
-      ament_index_cpp::get_package_share_directory("ips_cam");
+      ament_index_cpp::get_package_share_path("ips_cam").string();
     return package_share_directory + path.substr(4);
   }
   return path;    // Return the path unchanged if no tilde
@@ -313,7 +313,7 @@ ObjectTracker::ObjectTracker(IndoorCoordSystem ics_init, std::map<int, double> t
   }
 
   // prep for calling the object tracker computation over and over
-  detectorParams = cv::aruco::DetectorParameters::create();
+  detectorParams = cv::aruco::DetectorParameters();
   dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_5X5_50);
 
   tagPoseEstimator = TagPoseEstimator();
